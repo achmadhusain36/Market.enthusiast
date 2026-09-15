@@ -1,0 +1,6 @@
+{
+  "name": "Market Enthusiast",
+  "description": "Aplikasi portofolio saham modern untuk Achmad Husain dengan pemantauan pasar global real-time, grafik candlestick interaktif, manajemen saldo profil, dan sinkronisasi riwayat transaksi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
