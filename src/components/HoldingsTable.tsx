@@ -2,6 +2,7 @@ import React from 'react';
 import { Briefcase, ArrowUpRight, ArrowDownRight, Plus, Minus, ArrowUpDown } from 'lucide-react';
 import { PortfolioHolding, StockQuote, CurrencyType } from '../types';
 import { formatCurrency, formatPercent } from '../utils/formatters';
+import { MarketLogo, StockCompanyLogo } from './MarketLogo';
 
 interface HoldingsTableProps {
   holdings: PortfolioHolding[];
@@ -84,12 +85,19 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
                       onClick={() => onSelectStock(holding.symbol)}
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-[#141b2a] border border-[#232f48] flex items-center justify-center font-bold text-xs text-white">
-                          {holding.symbol.split('.')[0]}
-                        </div>
+                        <StockCompanyLogo
+                          symbol={holding.symbol}
+                          market={stock ? stock.market : (holding.currency === 'IDR' ? 'IDX' : 'NASDAQ')}
+                          size="md"
+                        />
                         <div>
-                          <div className="font-bold text-white text-xs group-hover:text-emerald-400 transition-colors">
-                            {holding.symbol}
+                          <div className="font-bold text-white text-xs group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                            <span>{holding.symbol}</span>
+                            <MarketLogo
+                              market={stock ? stock.market : (holding.currency === 'IDR' ? 'IDX' : 'NASDAQ')}
+                              size="xs"
+                              showLabel={true}
+                            />
                           </div>
                           <div className="text-[10px] text-neutral-400 font-sans truncate max-w-[130px]">
                             {holding.name}

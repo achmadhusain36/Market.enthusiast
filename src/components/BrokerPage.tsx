@@ -11,6 +11,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { Language, UserProfile } from '../types';
+import { MarketLogo } from './MarketLogo';
 
 interface BrokerPageProps {
   language?: Language;
@@ -153,7 +154,17 @@ export const BrokerPage: React.FC<BrokerPageProps> = ({
                     {b.name.slice(0, 2)}
                   </div>
                   <div>
-                    <h3 className="font-bold text-white text-sm sm:text-base">{b.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-white text-sm sm:text-base">{b.name}</h3>
+                      {b.id === 'ibkr' ? (
+                        <div className="flex items-center gap-1">
+                          <MarketLogo market="NASDAQ" size="xs" />
+                          <MarketLogo market="NYSE" size="xs" />
+                        </div>
+                      ) : (
+                        <MarketLogo market="IDX" size="xs" />
+                      )}
+                    </div>
                     <p className="text-xs text-neutral-400">{b.market}</p>
                   </div>
                 </div>

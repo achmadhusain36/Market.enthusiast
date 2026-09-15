@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { History, Search, ArrowUpRight, ArrowDownRight, Download, Filter, CheckCircle2, RefreshCw, Layers, TrendingUp } from 'lucide-react';
 import { Transaction, StockQuote, CurrencyType } from '../types';
 import { formatCurrency, formatPercent } from '../utils/formatters';
+import { StockCompanyLogo, MarketLogo } from './MarketLogo';
 
 interface TransactionHistoryProps {
   transactions: Transaction[];
@@ -238,11 +239,19 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                     {/* Stock Details */}
                     <td className="py-3 px-3.5 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded bg-[#162033] border border-[#25324c] flex items-center justify-center font-bold text-[10px] text-white">
-                          {trx.symbol.split('.')[0]}
-                        </div>
+                        <StockCompanyLogo
+                          symbol={trx.symbol}
+                          market={trx.currency === 'IDR' ? 'IDX' : 'NASDAQ'}
+                          size="sm"
+                        />
                         <div>
-                          <span className="font-bold text-white text-xs">{trx.symbol}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-white text-xs">{trx.symbol}</span>
+                            <MarketLogo
+                              market={trx.currency === 'IDR' ? 'IDX' : 'NASDAQ'}
+                              size="xs"
+                            />
+                          </div>
                           <span className="text-[10px] text-neutral-400 block font-sans truncate max-w-[140px]">
                             {trx.name}
                           </span>

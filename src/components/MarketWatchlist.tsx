@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { StockQuote, MarketIndex, CurrencyType, Language } from '../types';
 import { TRANSLATIONS } from '../utils/translations';
+import { MarketLogo, StockCompanyLogo } from './MarketLogo';
 
 interface MarketWatchlistProps {
   stocks: StockQuote[];
@@ -120,10 +121,11 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
                       }`}
                     >
                       <div className="col-span-5 flex items-center gap-1.5 min-w-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-neutral-500 shrink-0"></span>
+                        <StockCompanyLogo symbol={idx.symbol} market="GLOBAL" size="xs" />
                         <span className="font-bold text-white tracking-tight truncate font-sans">
                           {idx.name}
                         </span>
+                        <MarketLogo market="GLOBAL" size="xs" />
                         {idx.name === 'VIX' && (
                           <span className="text-[9px] font-bold text-amber-400 bg-amber-500/20 px-0.5 rounded shrink-0">
                             D
@@ -178,20 +180,11 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
                       }`}
                     >
                       <div className="col-span-5 flex items-center gap-1.5 min-w-0">
-                        {/* Dot indicator */}
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                            isPos ? 'bg-[#22ab94]' : 'bg-[#f23645]'
-                          }`}
-                        ></span>
+                        <StockCompanyLogo symbol={stock.symbol} market={stock.market} size="xs" />
                         <span className="font-bold text-white tracking-tight truncate font-sans">
                           {stock.symbol}
                         </span>
-                        {stock.market === 'IDX' && (
-                          <span className="text-[9px] font-bold text-neutral-400 bg-neutral-800 px-1 rounded shrink-0">
-                            IDX
-                          </span>
-                        )}
+                        <MarketLogo market={stock.market} size="xs" />
                       </div>
                       <div className="col-span-3 text-right text-neutral-200 font-semibold">
                         {formatTV(stock.price, stock.price >= 1000 ? (stock.market === 'IDX' && stock.symbol !== 'COMPOSITE' ? 0 : 2) : 2)}
@@ -221,13 +214,19 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
         {/* 2. Active Symbol Mini-Overview Card (Matching Screenshot bottom-right) */}
         <div className="border-t border-[#1e222d] bg-[#0e121a] p-3.5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-[#f23645]/20 border border-[#f23645]/50 flex items-center justify-center text-[#f23645] font-bold text-xs">
-                {activeStock.symbol === 'COMPOSITE' ? '●' : activeStock.symbol.slice(0, 1)}
+            <div className="flex items-center gap-2.5">
+              <StockCompanyLogo symbol={activeStock.symbol} market={activeStock.market} size="md" />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-extrabold text-sm text-white tracking-tight">
+                    {activeStock.symbol}
+                  </span>
+                  <MarketLogo market={activeStock.market} size="xs" showLabel={true} />
+                </div>
+                <p className="text-[10px] text-neutral-400 font-sans truncate max-w-[140px]">
+                  {activeStock.name}
+                </p>
               </div>
-              <span className="font-extrabold text-sm text-white tracking-tight">
-                {activeStock.symbol}
-              </span>
             </div>
 
             <div className="flex items-center gap-1.5 text-neutral-400">

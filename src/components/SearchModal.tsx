@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { StockQuote, MarketIndex, CurrencyType, Language } from '../types';
 import { formatCurrency, formatPercent } from '../utils/formatters';
+import { MarketLogo, StockCompanyLogo } from './MarketLogo';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   language = 'id',
 }) => {
   const [query, setQuery] = useState('');
-  const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'IDX' | 'US' | 'INDEX'>('ALL');
+  const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'IDX' | 'NASDAQ' | 'NYSE' | 'INDEX'>('ALL');
   const inputRef = useRef<HTMLInputElement>(null);
   const isId = language === 'id';
 
@@ -65,8 +66,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     let stockList = stocks;
     if (selectedMarket === 'IDX') {
       stockList = stocks.filter((s) => s.market === 'IDX');
-    } else if (selectedMarket === 'US') {
-      stockList = stocks.filter((s) => s.market === 'NASDAQ' || s.market === 'NYSE');
+    } else if (selectedMarket === 'NASDAQ') {
+      stockList = stocks.filter((s) => s.market === 'NASDAQ');
+    } else if (selectedMarket === 'NYSE') {
+      stockList = stocks.filter((s) => s.market === 'NYSE');
     } else if (selectedMarket === 'INDEX') {
       stockList = stocks.filter((s) => s.symbol === 'COMPOSITE');
     }
@@ -124,35 +127,47 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setSelectedMarket('ALL')}
-              className={`px-3 py-1 rounded-full font-semibold transition-colors cursor-pointer ${
+              className={`px-3 py-1 rounded-full font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
                 selectedMarket === 'ALL'
                   ? 'bg-[#2962ff] text-white'
                   : 'bg-[#151b2a] text-neutral-400 hover:text-white'
               }`}
             >
-              {isId ? 'Semua Pasar' : 'All Markets'}
+              <Globe className="w-3 h-3" />
+              <span>{isId ? 'Semua Pasar' : 'All Markets'}</span>
             </button>
             <button
               onClick={() => setSelectedMarket('IDX')}
-              className={`px-3 py-1 rounded-full font-semibold transition-colors cursor-pointer flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-full font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
                 selectedMarket === 'IDX'
                   ? 'bg-[#2962ff] text-white'
                   : 'bg-[#151b2a] text-neutral-400 hover:text-white'
               }`}
             >
-              <span>🇮🇩</span>
+              <MarketLogo market="IDX" size="xs" />
               <span>IHSG (IDX)</span>
             </button>
             <button
-              onClick={() => setSelectedMarket('US')}
-              className={`px-3 py-1 rounded-full font-semibold transition-colors cursor-pointer flex items-center gap-1 ${
-                selectedMarket === 'US'
+              onClick={() => setSelectedMarket('NASDAQ')}
+              className={`px-2.5 py-1 rounded-full font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                selectedMarket === 'NASDAQ'
                   ? 'bg-[#2962ff] text-white'
                   : 'bg-[#151b2a] text-neutral-400 hover:text-white'
               }`}
             >
-              <span>🇺🇸</span>
-              <span>Wall Street</span>
+              <MarketLogo market="NASDAQ" size="xs" />
+              <span>NASDAQ</span>
+            </button>
+            <button
+              onClick={() => setSelectedMarket('NYSE')}
+              className={`px-2.5 py-1 rounded-full font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                selectedMarket === 'NYSE'
+                  ? 'bg-[#2962ff] text-white'
+                  : 'bg-[#151b2a] text-neutral-400 hover:text-white'
+              }`}
+            >
+              <MarketLogo market="NYSE" size="xs" />
+              <span>NYSE</span>
             </button>
             <button
               onClick={() => setSelectedMarket('INDEX')}
@@ -227,17 +242,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                       onClose();
                     }}
                   >
-                    <div className="w-9 h-9 rounded-xl bg-[#172033] border border-[#26334f] flex items-center justify-center font-bold text-xs text-white group-hover:border-[#2962ff] transition-colors shrink-0">
-                      {stock.symbol.split('.')[0].slice(0, 4)}
-                    </div>
+                    <StockCompanyLogo symbol={stock.symbol} market={stock.market} size="md" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-white text-sm group-hover:text-emerald-400 transition-colors">
                           {stock.symbol}
                         </span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1c2438] text-neutral-300 font-medium">
-                          {stock.market}
-                        </span>
+                        <MarketLogo market={stock.market} size="xs" showLabel={true} />
                       </div>
                       <div className="text-xs text-neutral-400 truncate">
                         {stock.name} • <span className="text-neutral-500">{stock.sector}</span>

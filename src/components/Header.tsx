@@ -19,6 +19,7 @@ import {
 import { UserProfile, StockQuote, MarketIndex, CurrencyType, Language } from '../types';
 import { TRANSLATIONS } from '../utils/translations';
 import { formatCurrency } from '../utils/formatters';
+import { MarketLogo } from './MarketLogo';
 
 interface HeaderProps {
   userProfile: UserProfile;
@@ -106,11 +107,16 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
             <span className="text-white font-bold tracking-wider">{t.liveMarket}</span>
             <span className="text-neutral-600">|</span>
-            <span className="text-neutral-400">NYSE/NASDAQ:</span>
-            <span className="text-emerald-400 font-bold">{t.nyseOpen}</span>
+            <div className="flex items-center gap-1">
+              <MarketLogo market="NASDAQ" size="xs" />
+              <MarketLogo market="NYSE" size="xs" />
+              <span className="text-emerald-400 font-bold ml-1">{t.nyseOpen}</span>
+            </div>
             <span className="text-neutral-600">|</span>
-            <span className="text-neutral-400">IDX:</span>
-            <span className="text-emerald-400 font-bold">{t.idxActive}</span>
+            <div className="flex items-center gap-1">
+              <MarketLogo market="IDX" size="xs" />
+              <span className="text-emerald-400 font-bold ml-1">{t.idxActive}</span>
+            </div>
           </div>
 
           <div className="hidden lg:flex items-center gap-2 text-neutral-400 text-[11px] font-mono-num border-l border-[#202735] pl-3">

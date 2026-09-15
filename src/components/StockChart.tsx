@@ -13,6 +13,7 @@ import {
 import { StockQuote, CandleData, Timeframe, ChartType, CurrencyType, Language } from '../types';
 import { TRANSLATIONS } from '../utils/translations';
 import { COMPARISON_INDICES } from '../data/mockStocks';
+import { MarketLogo, StockCompanyLogo } from './MarketLogo';
 
 interface StockChartProps {
   stock: StockQuote;
@@ -189,22 +190,21 @@ export const StockChart: React.FC<StockChartProps> = ({
       <div className="px-4 py-3 border-b border-[#1e222d] flex flex-wrap items-center justify-between gap-3 bg-[#0c0f17]">
         {/* Symbol Title, Price, and Superchart Link */}
         <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-          {/* Circular Symbol Icon (Red for COMPOSITE / IDX, or branded) */}
-          <div className="w-7 h-7 rounded-full bg-[#f23645]/20 border border-[#f23645]/40 flex items-center justify-center text-[#f23645] font-bold text-xs shadow">
-            {stock.symbol === 'COMPOSITE' ? (
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2.5" />
-                <path d="M8 12h8M12 8v8" stroke="currentColor" strokeWidth="2" />
-              </svg>
-            ) : (
-              stock.symbol.slice(0, 2)
-            )}
-          </div>
+          {/* Authentic Company / Index Brand Logo */}
+          <StockCompanyLogo
+            symbol={stock.symbol}
+            market={stock.market}
+            size="md"
+            className="shadow-md ring-1 ring-white/10"
+          />
 
-          {/* Symbol Name */}
-          <span className="text-base sm:text-lg font-black tracking-tight text-white uppercase">
-            {stock.symbol}
-          </span>
+          {/* Symbol Name and Market Logo Badge */}
+          <div className="flex items-center gap-2">
+            <span className="text-base sm:text-lg font-black tracking-tight text-white uppercase">
+              {stock.symbol}
+            </span>
+            <MarketLogo market={stock.market} size="sm" showLabel={true} />
+          </div>
 
           {/* Price with "D" tag and "POINT" */}
           <div className="flex items-baseline gap-1.5 font-mono-num">

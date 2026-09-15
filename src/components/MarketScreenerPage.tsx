@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { StockQuote, MarketIndex, CurrencyType, Language } from '../types';
 import { formatCurrency, formatPercent } from '../utils/formatters';
+import { MarketLogo, StockCompanyLogo } from './MarketLogo';
 
 interface MarketScreenerPageProps {
   stocks: StockQuote[];
@@ -41,7 +42,7 @@ export const MarketScreenerPage: React.FC<MarketScreenerPageProps> = ({
 }) => {
   const isId = language === 'id';
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'IDX' | 'US' | 'COMPOSITE'>('ALL');
+  const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'IDX' | 'NASDAQ' | 'NYSE' | 'US' | 'COMPOSITE'>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<'ALL' | 'GAINERS' | 'LOSERS' | 'ACTIVE' | 'MEGA_CAP'>('ALL');
   const [sortBy, setSortBy] = useState<'changePercent' | 'price' | 'volume' | 'symbol'>('changePercent');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -61,6 +62,10 @@ export const MarketScreenerPage: React.FC<MarketScreenerPageProps> = ({
     // Filter by Market
     if (selectedMarket === 'IDX') {
       list = list.filter((s) => s.market === 'IDX');
+    } else if (selectedMarket === 'NASDAQ') {
+      list = list.filter((s) => s.market === 'NASDAQ');
+    } else if (selectedMarket === 'NYSE') {
+      list = list.filter((s) => s.market === 'NYSE');
     } else if (selectedMarket === 'US') {
       list = list.filter((s) => s.market === 'NASDAQ' || s.market === 'NYSE');
     } else if (selectedMarket === 'COMPOSITE') {
@@ -231,35 +236,47 @@ export const MarketScreenerPage: React.FC<MarketScreenerPageProps> = ({
             </span>
             <button
               onClick={() => setSelectedMarket('ALL')}
-              className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs ${
+              className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs flex items-center gap-1.5 ${
                 selectedMarket === 'ALL'
                   ? 'bg-[#2962ff] text-white'
                   : 'bg-[#141b2a] text-neutral-400 hover:text-white hover:bg-[#1a2336]'
               }`}
             >
-              {isId ? 'Semua Pasar' : 'All Markets'}
+              <Globe className="w-3.5 h-3.5" />
+              <span>{isId ? 'Semua Pasar' : 'All Markets'}</span>
             </button>
             <button
               onClick={() => setSelectedMarket('IDX')}
-              className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs flex items-center gap-1.5 ${
                 selectedMarket === 'IDX'
                   ? 'bg-[#2962ff] text-white'
                   : 'bg-[#141b2a] text-neutral-400 hover:text-white hover:bg-[#1a2336]'
               }`}
             >
-              <span>🇮🇩</span>
+              <MarketLogo market="IDX" size="xs" />
               <span>IHSG (IDX)</span>
             </button>
             <button
-              onClick={() => setSelectedMarket('US')}
-              className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs flex items-center gap-1 ${
-                selectedMarket === 'US'
+              onClick={() => setSelectedMarket('NASDAQ')}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs flex items-center gap-1.5 ${
+                selectedMarket === 'NASDAQ'
                   ? 'bg-[#2962ff] text-white'
                   : 'bg-[#141b2a] text-neutral-400 hover:text-white hover:bg-[#1a2336]'
               }`}
             >
-              <span>🇺🇸</span>
-              <span>Wall Street (US)</span>
+              <MarketLogo market="NASDAQ" size="xs" />
+              <span>NASDAQ</span>
+            </button>
+            <button
+              onClick={() => setSelectedMarket('NYSE')}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs flex items-center gap-1.5 ${
+                selectedMarket === 'NYSE'
+                  ? 'bg-[#2962ff] text-white'
+                  : 'bg-[#141b2a] text-neutral-400 hover:text-white hover:bg-[#1a2336]'
+              }`}
+            >
+              <MarketLogo market="NYSE" size="xs" />
+              <span>NYSE</span>
             </button>
           </div>
 
@@ -352,19 +369,15 @@ export const MarketScreenerPage: React.FC<MarketScreenerPageProps> = ({
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-xl bg-[#141c2c] border border-[#23304c] flex items-center justify-center font-bold text-sm text-white group-hover:border-[#2962ff] transition-colors">
-                        {stock.symbol.split('.')[0].slice(0, 4)}
-                      </div>
+                      <StockCompanyLogo symbol={stock.symbol} market={stock.market} size="lg" />
                       <div>
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-white text-base group-hover:text-emerald-400 transition-colors">
                             {stock.symbol}
                           </span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1c2438] text-neutral-300 font-medium">
-                            {stock.market}
-                          </span>
+                          <MarketLogo market={stock.market} size="xs" showLabel={true} />
                         </div>
-                        <p className="text-xs text-neutral-400 truncate max-w-[180px]">
+                        <p className="text-xs text-neutral-400 truncate max-w-[170px]">
                           {stock.name}
                         </p>
                       </div>
@@ -497,15 +510,11 @@ export const MarketScreenerPage: React.FC<MarketScreenerPageProps> = ({
                         onClick={() => handleMonitorStock(stock.symbol)}
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-[#141b2a] border border-[#232f48] flex items-center justify-center font-bold text-xs text-white">
-                            {stock.symbol.split('.')[0].slice(0, 3)}
-                          </div>
+                          <StockCompanyLogo symbol={stock.symbol} market={stock.market} size="md" />
                           <div>
                             <div className="font-bold text-white text-xs group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
                               <span>{stock.symbol}</span>
-                              <span className="text-[9px] px-1 py-0.2 rounded bg-[#1c2438] text-neutral-300 font-sans">
-                                {stock.market}
-                              </span>
+                              <MarketLogo market={stock.market} size="xs" showLabel={true} />
                             </div>
                             <div className="text-[11px] text-neutral-400 font-sans truncate max-w-[170px]">
                               {stock.name}
