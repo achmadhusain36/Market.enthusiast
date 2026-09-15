@@ -5,6 +5,13 @@ import { MarketWatchlist } from './components/MarketWatchlist';
 import { TradingViewBottomDock } from './components/TradingViewBottomDock';
 import { ProfileModal } from './components/ProfileModal';
 import { TradeModal } from './components/TradeModal';
+import { PasscodeModal } from './components/PasscodeModal';
+import { SearchModal } from './components/SearchModal';
+import { MarketScreenerPage } from './components/MarketScreenerPage';
+import { PortfolioPage } from './components/PortfolioPage';
+import { TransactionsPage } from './components/TransactionsPage';
+import { CommunityPage } from './components/CommunityPage';
+import { BrokerPage } from './components/BrokerPage';
 import {
   INITIAL_USER_PROFILE,
   INITIAL_GLOBAL_INDICES,
@@ -24,6 +31,16 @@ import {
   Language,
 } from './types';
 import { TRANSLATIONS } from './utils/translations';
+import {
+  TrendingUp,
+  Compass,
+  Briefcase,
+  History,
+  MessageSquare,
+  Building2,
+  Search,
+  Lock,
+} from 'lucide-react';
 
 export default function App() {
   // 1. Persistent User Profile & Language & Balance (Achmad Husain)
@@ -77,20 +94,25 @@ export default function App() {
     localStorage.setItem('market_enthusiast_transactions', JSON.stringify(transactions));
   }, [transactions]);
 
-  // 4. Live Global Stocks & Indices State (Default to COMPOSITE like in Screenshot 228)
+  // 4. Live Global Stocks & Indices State
   const [stocks, setStocks] = useState<StockQuote[]>(INITIAL_STOCKS);
   const [indices, setIndices] = useState<MarketIndex[]>(INITIAL_GLOBAL_INDICES);
   const [activeSymbol, setActiveSymbol] = useState<string>('COMPOSITE');
   const [timeframe, setTimeframe] = useState<Timeframe>('1M');
   const [isLiveSyncing, setIsLiveSyncing] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Active Navigation Tab: 'chart' | 'screener' | 'portfolio' | 'transactions' | 'community' | 'broker'
   const [activeNavTab, setActiveNavTab] = useState<string>('chart');
 
   // Bottom dock state
   const [isBottomDockOpen, setIsBottomDockOpen] = useState(true);
 
   // 5. Modal States
+  const [isPasscodeModalOpen, setIsPasscodeModalOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+
   const [tradeModalState, setTradeModalState] = useState<{
     isOpen: boolean;
     stock: StockQuote;
@@ -100,6 +122,18 @@ export default function App() {
     stock: INITIAL_STOCKS[0],
     initialType: 'BUY',
   });
+
+  // Global Ctrl+K / Cmd+K listener for instant search
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchModalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // Active stock object
   const activeStock = useMemo(() => {
@@ -118,13 +152,11 @@ export default function App() {
     if (!isLiveSyncing) return;
 
     const interval = setInterval(() => {
-      // Pick 1 to 3 random stocks to simulate real-time price ticks
       setStocks((prevStocks) => {
         return prevStocks.map((stock) => {
-          // 40% chance this stock gets a tick
           if (Math.random() > 0.40) return { ...stock, flashDirection: null };
 
-          const tickPercent = (Math.random() - 0.49) * 0.004; // tiny realistic tick +/- 0.2%
+          const tickPercent = (Math.random() - 0.49) * 0.004;
           const decimals = stock.symbol === 'COMPOSITE' ? 4 : 2;
           const newPrice = Math.max(0.1, Number((stock.price * (1 + tickPercent)).toFixed(decimals)));
           const priceDiff = newPrice - stock.price;
@@ -148,7 +180,6 @@ export default function App() {
         });
       });
 
-      // Also tick global indices slightly
       setIndices((prevIndices) =>
         prevIndices.map((idx) => {
           if (Math.random() > 0.45) return idx;
@@ -338,6 +369,8 @@ export default function App() {
     );
   }, [stocks, searchQuery]);
 
+  const isId = userProfile.language === 'id';
+
   return (
     <div className="min-h-screen bg-[#07090e] text-white flex flex-col selection:bg-emerald-500/30 selection:text-emerald-200">
       {/* 1. TradingView Top Header Bar */}
@@ -348,12 +381,14 @@ export default function App() {
         selectedCurrency={userProfile.selectedCurrency}
         onToggleCurrency={handleToggleCurrency}
         onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenProfileWithLock={() => setIsPasscodeModalOpen(true)}
         onOpenTrade={() => handleOpenTrade()}
         isLiveSyncing={isLiveSyncing}
         onToggleLiveSync={() => setIsLiveSyncing(!isLiveSyncing)}
         onSelectLanguage={handleSelectLanguage}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onOpenSearch={() => setIsSearchModalOpen(true)}
         activeNavTab={activeNavTab}
         onNavTabChange={(tab) => {
           setActiveNavTab(tab);
@@ -363,55 +398,239 @@ export default function App() {
         }}
       />
 
-      {/* 2. Main Terminal Content (Directly matching Screenshot 228 layout) */}
-      <main className="flex-1 w-full flex flex-col p-2 sm:p-4 gap-4">
-        {/* Main Grid: Superchart on Left, Watchlist Drawer on Right */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 sm:gap-4 flex-1">
-          {/* Left / Center: TradingView Superchart (8 cols on XL) */}
-          <div className="xl:col-span-8 flex flex-col">
-            <StockChart
-              stock={activeStock}
-              candles={candles}
-              timeframe={timeframe}
-              onTimeframeChange={setTimeframe}
-              selectedCurrency={userProfile.selectedCurrency}
-              onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
-              language={userProfile.language || 'id'}
-            />
-          </div>
+      {/* 2. Interactive Navigation Ribbon (Switch between Superchart, Screener, Portfolio, Transactions, Community, Broker) */}
+      <div className="bg-[#0b0e17] border-b border-[#182030] px-3 sm:px-6 py-2 flex items-center justify-between gap-2 overflow-x-auto select-none">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => setActiveNavTab('chart')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeNavTab === 'chart'
+                ? 'bg-[#182338] text-white border border-[#27385a] shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-[#121724]'
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Superchart</span>
+          </button>
 
-          {/* Right: TradingView Watchlist & Market Insights Sidebar (4 cols on XL) */}
-          <div className="xl:col-span-4 flex flex-col">
-            <MarketWatchlist
-              stocks={filteredStocks}
-              indices={indices}
-              activeSymbol={activeSymbol}
-              onSelectStock={handleSelectStock}
-              onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
-              selectedCurrency={userProfile.selectedCurrency}
-              language={userProfile.language || 'id'}
-            />
-          </div>
+          <button
+            onClick={() => setActiveNavTab('screener')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeNavTab === 'screener'
+                ? 'bg-[#2962ff] text-white shadow-md shadow-blue-900/30'
+                : 'text-neutral-300 hover:text-white hover:bg-[#121724] border border-[#20293d]'
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5 text-cyan-300" />
+            <span>{isId ? 'Cari Saham & Pantau' : 'Market Screener'}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('portfolio')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeNavTab === 'portfolio'
+                ? 'bg-[#182338] text-white border border-[#27385a] shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-[#121724]'
+            }`}
+          >
+            <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{isId ? 'Portofolio Saya' : 'My Portfolio'}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('transactions')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeNavTab === 'transactions'
+                ? 'bg-[#182338] text-white border border-[#27385a] shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-[#121724]'
+            }`}
+          >
+            <History className="w-3.5 h-3.5 text-amber-400" />
+            <span>{isId ? 'Riwayat Transaksi' : 'Order History'}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('community')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeNavTab === 'community'
+                ? 'bg-[#182338] text-white border border-[#27385a] shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-[#121724]'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-purple-400" />
+            <span>{isId ? 'Ide Komunitas' : 'Community Ideas'}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('broker')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeNavTab === 'broker'
+                ? 'bg-[#182338] text-white border border-[#27385a] shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-[#121724]'
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5 text-rose-400" />
+            <span>{isId ? 'Status Broker' : 'Brokers'}</span>
+          </button>
         </div>
 
-        {/* 3. Bottom Dock Console: Real-time Transactions, Holdings, & Cash Balances */}
-        <TradingViewBottomDock
-          holdings={holdings}
-          transactions={transactions}
-          stocks={stocks}
-          userProfile={userProfile}
-          selectedCurrency={userProfile.selectedCurrency}
-          language={userProfile.language || 'id'}
-          onSelectStock={handleSelectStock}
-          onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
-          onOpenProfile={() => setIsProfileOpen(true)}
-          isLiveSyncing={isLiveSyncing}
-          isOpen={isBottomDockOpen}
-          onToggleOpen={() => setIsBottomDockOpen(!isBottomDockOpen)}
-        />
+        {/* Quick Search Launch Button & Locked Profile Pill */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsSearchModalOpen(true)}
+            className="px-3 py-1 rounded-xl bg-[#141a27] hover:bg-[#1c2438] text-cyan-300 text-xs font-semibold flex items-center gap-1.5 border border-[#212b40] transition-colors cursor-pointer"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">{isId ? 'Cari Saham (Ctrl+K)' : 'Search (Ctrl+K)'}</span>
+          </button>
+
+          <button
+            onClick={() => setIsPasscodeModalOpen(true)}
+            className="px-2.5 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-[11px] font-bold flex items-center gap-1 border border-amber-500/30 transition-colors cursor-pointer"
+            title="Profil Achmad Husain dilindungi sandi 708951"
+          >
+            <Lock className="w-3 h-3" />
+            <span className="hidden sm:inline">PIN 708951</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Dynamic Page View Router */}
+      <main className="flex-1 w-full flex flex-col">
+        {activeNavTab === 'screener' && (
+          <MarketScreenerPage
+            stocks={stocks}
+            indices={indices}
+            onSelectStock={handleSelectStock}
+            onOpenTrade={(stock) => handleOpenTrade(stock, 'BUY')}
+            selectedCurrency={userProfile.selectedCurrency}
+            language={userProfile.language}
+            onNavigateToChart={() => setActiveNavTab('chart')}
+          />
+        )}
+
+        {activeNavTab === 'portfolio' && (
+          <PortfolioPage
+            holdings={holdings}
+            stocks={stocks}
+            userProfile={userProfile}
+            selectedCurrency={userProfile.selectedCurrency}
+            language={userProfile.language}
+            onSelectStock={handleSelectStock}
+            onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
+            onOpenSearch={() => setIsSearchModalOpen(true)}
+            onNavigateToChart={() => setActiveNavTab('chart')}
+          />
+        )}
+
+        {activeNavTab === 'transactions' && (
+          <TransactionsPage
+            transactions={transactions}
+            stocks={stocks}
+            selectedCurrency={userProfile.selectedCurrency}
+            isLiveSyncing={isLiveSyncing}
+            language={userProfile.language}
+            onSelectStock={handleSelectStock}
+            onNavigateToChart={() => setActiveNavTab('chart')}
+            onOpenTrade={() => handleOpenTrade()}
+          />
+        )}
+
+        {activeNavTab === 'community' && (
+          <CommunityPage
+            language={userProfile.language}
+            stocks={stocks}
+            onSelectStock={handleSelectStock}
+            onNavigateToChart={() => setActiveNavTab('chart')}
+          />
+        )}
+
+        {activeNavTab === 'broker' && (
+          <BrokerPage
+            language={userProfile.language}
+            userProfile={userProfile}
+            onOpenTrade={() => handleOpenTrade()}
+          />
+        )}
+
+        {activeNavTab === 'chart' && (
+          <div className="flex-1 w-full flex flex-col p-2 sm:p-4 gap-4">
+            {/* Main Grid: Superchart on Left, Watchlist Drawer on Right */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 sm:gap-4 flex-1">
+              {/* Left / Center: TradingView Superchart (8 cols on XL) */}
+              <div className="xl:col-span-8 flex flex-col">
+                <StockChart
+                  stock={activeStock}
+                  candles={candles}
+                  timeframe={timeframe}
+                  onTimeframeChange={setTimeframe}
+                  selectedCurrency={userProfile.selectedCurrency}
+                  onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
+                  language={userProfile.language || 'id'}
+                />
+              </div>
+
+              {/* Right: TradingView Watchlist & Market Insights Sidebar (4 cols on XL) */}
+              <div className="xl:col-span-4 flex flex-col">
+                <MarketWatchlist
+                  stocks={filteredStocks}
+                  indices={indices}
+                  activeSymbol={activeSymbol}
+                  onSelectStock={handleSelectStock}
+                  onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
+                  selectedCurrency={userProfile.selectedCurrency}
+                  language={userProfile.language || 'id'}
+                />
+              </div>
+            </div>
+
+            {/* Bottom Dock Console: Real-time Transactions, Holdings, & Cash Balances */}
+            <TradingViewBottomDock
+              holdings={holdings}
+              transactions={transactions}
+              stocks={stocks}
+              userProfile={userProfile}
+              selectedCurrency={userProfile.selectedCurrency}
+              language={userProfile.language || 'id'}
+              onSelectStock={handleSelectStock}
+              onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
+              onOpenProfile={() => setIsPasscodeModalOpen(true)}
+              isLiveSyncing={isLiveSyncing}
+              isOpen={isBottomDockOpen}
+              onToggleOpen={() => setIsBottomDockOpen(!isBottomDockOpen)}
+            />
+          </div>
+        )}
       </main>
 
-      {/* Profile & Settings & Language Modal */}
+      {/* 4. Passcode Security Gate Modal (PIN: 708951) */}
+      <PasscodeModal
+        isOpen={isPasscodeModalOpen}
+        onClose={() => setIsPasscodeModalOpen(false)}
+        onSuccess={() => {
+          setIsPasscodeModalOpen(false);
+          setIsProfileOpen(true);
+        }}
+        language={userProfile.language}
+      />
+
+      {/* 5. Global Search Modal (Ctrl+K or search bar click) */}
+      <SearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        stocks={stocks}
+        indices={indices}
+        onSelectStock={(symbol) => {
+          handleSelectStock(symbol);
+          setActiveNavTab('chart');
+        }}
+        onOpenTrade={(stock) => handleOpenTrade(stock, 'BUY')}
+        selectedCurrency={userProfile.selectedCurrency}
+        language={userProfile.language}
+      />
+
+      {/* 6. Profile & Settings & Balance Editor Modal (Opens ONLY after PIN 708951 verified) */}
       <ProfileModal
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
@@ -419,7 +638,7 @@ export default function App() {
         onUpdateProfile={(updated) => setUserProfile(updated)}
       />
 
-      {/* Real-time Trade Execution Modal */}
+      {/* 7. Real-time Trade Execution Modal */}
       <TradeModal
         isOpen={tradeModalState.isOpen}
         onClose={() => setTradeModalState((prev) => ({ ...prev, isOpen: false }))}
@@ -432,3 +651,4 @@ export default function App() {
     </div>
   );
 }
+

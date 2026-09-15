@@ -9,6 +9,12 @@ import {
   Globe,
   SlidersHorizontal,
   Wallet,
+  Lock,
+  Compass,
+  Briefcase,
+  History,
+  MessageSquare,
+  Building2,
 } from 'lucide-react';
 import { UserProfile, StockQuote, MarketIndex, CurrencyType, Language } from '../types';
 import { TRANSLATIONS } from '../utils/translations';
@@ -21,12 +27,14 @@ interface HeaderProps {
   selectedCurrency: CurrencyType;
   onToggleCurrency: () => void;
   onOpenProfile: () => void;
+  onOpenProfileWithLock: () => void;
   onOpenTrade: () => void;
   isLiveSyncing: boolean;
   onToggleLiveSync: () => void;
   onSelectLanguage: (lang: Language) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  onOpenSearch: () => void;
   activeNavTab: string;
   onNavTabChange: (tab: string) => void;
 }
@@ -38,12 +46,14 @@ export const Header: React.FC<HeaderProps> = ({
   selectedCurrency,
   onToggleCurrency,
   onOpenProfile,
+  onOpenProfileWithLock,
   onOpenTrade,
   isLiveSyncing,
   onToggleLiveSync,
   onSelectLanguage,
   searchQuery,
   onSearchChange,
+  onOpenSearch,
   activeNavTab,
   onNavTabChange,
 }) => {
@@ -159,67 +169,110 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Search Pill: Cari (Ctrl+K) / Search (Ctrl+K) */}
-          <div className="relative max-w-xs w-full hidden sm:block">
-            <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder={t.searchPlaceholder}
-              className="w-full bg-[#1e222d] hover:bg-[#252936] focus:bg-[#252936] border border-[#2a2e39] focus:border-blue-500 rounded-full pl-9 pr-3 py-1.5 text-xs text-white placeholder-neutral-400 focus:outline-none transition-colors"
-            />
+          {/* Interactive Search Bar: Click or Press Ctrl+K opens SearchModal */}
+          <div
+            onClick={onOpenSearch}
+            className="relative max-w-xs w-full hidden sm:flex items-center cursor-pointer group"
+          >
+            <Search className="w-4 h-4 text-neutral-400 group-hover:text-[#2962ff] absolute left-3 transition-colors" />
+            <div className="w-full bg-[#1e222d] group-hover:bg-[#252a38] border border-[#2a2e39] group-hover:border-[#2962ff]/60 rounded-full pl-9 pr-8 py-1.5 text-xs text-neutral-400 group-hover:text-neutral-200 transition-colors flex items-center justify-between">
+              <span>{searchQuery ? searchQuery : (userProfile.language === 'en' ? 'Search stocks (Ctrl+K)' : 'Cari saham & pantau (Ctrl+K)')}</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-[#161a24] text-[10px] text-neutral-500 border border-[#273042] font-mono">
+                ⌘K
+              </kbd>
+            </div>
           </div>
 
-          {/* Navigation Links (Produk, Komunitas, Pasar, Broker, Lebih lanjut) */}
+          {/* Mobile Search Button */}
+          <button
+            onClick={onOpenSearch}
+            className="sm:hidden p-2 rounded-lg bg-[#1e222d] hover:bg-[#252936] text-neutral-300 hover:text-white border border-[#2a2e39] cursor-pointer"
+            title="Cari Saham dan Pantau"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
+          {/* Navigation Links (Produk, Pasar, Portofolio, Komunitas, Broker) */}
           <nav className="hidden md:flex items-center gap-1 text-xs font-semibold">
+            {/* 1. Superchart */}
             <button
               onClick={() => onNavTabChange('chart')}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
                 activeNavTab === 'chart'
-                  ? 'text-white bg-[#1e222d] font-bold'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
                   : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
               }`}
             >
-              {t.navProducts}
+              <span>{t.navProducts}</span>
             </button>
+
+            {/* 2. Cari Saham & Pantau (Pasar / Screener) */}
             <button
-              onClick={() => onNavTabChange('holdings')}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                activeNavTab === 'holdings'
-                  ? 'text-white bg-[#1e222d] font-bold'
+              onClick={() => onNavTabChange('screener')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'screener'
+                  ? 'text-[#2962ff] bg-[#1e222d] font-bold border border-[#2962ff]/40 shadow-sm'
                   : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
               }`}
             >
-              {t.navCommunity}
-            </button>
-            <button
-              onClick={() => onNavTabChange('chart')}
-              className="px-3 py-1.5 rounded-lg text-[#2962ff] font-bold hover:bg-[#1e222d] transition-colors cursor-pointer flex items-center gap-1"
-            >
+              <Compass className="w-3.5 h-3.5 text-cyan-400" />
               <span>{t.navMarkets}</span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#2962ff]"></span>
             </button>
+
+            {/* 3. Portofolio Lengkap */}
             <button
-              onClick={() => onNavTabChange('transactions')}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                activeNavTab === 'transactions'
-                  ? 'text-white bg-[#1e222d] font-bold'
+              onClick={() => onNavTabChange('portfolio')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'portfolio'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
                   : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
               }`}
             >
-              {t.navBrokers}
+              <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{userProfile.language === 'en' ? 'Portfolio' : 'Portofolio'}</span>
             </button>
+
+            {/* 4. Riwayat Transaksi */}
             <button
-              onClick={onOpenProfile}
-              className="px-3 py-1.5 rounded-lg text-neutral-300 hover:text-white hover:bg-[#1e222d]/60 transition-colors cursor-pointer"
+              onClick={() => onNavTabChange('transactions')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'transactions'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
+                  : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
+              }`}
             >
-              {t.navMore}
+              <History className="w-3.5 h-3.5 text-amber-400" />
+              <span>{userProfile.language === 'en' ? 'Transactions' : 'Riwayat'}</span>
+            </button>
+
+            {/* 5. Komunitas & Ide Analisis */}
+            <button
+              onClick={() => onNavTabChange('community')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'community'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
+                  : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
+              }`}
+            >
+              <span>{t.navCommunity}</span>
+            </button>
+
+            {/* 6. Broker */}
+            <button
+              onClick={() => onNavTabChange('broker')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'broker'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
+                  : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
+              }`}
+            >
+              <span>{t.navBrokers}</span>
             </button>
           </nav>
         </div>
 
-        {/* Right Actions: Language Switcher, Currency, Order, Upgrade, Profile Avatar */}
+        {/* Right Actions: Language Switcher, Currency, Order, Upgrade, Profile Avatar (Locked with 708951) */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           {/* Direct Language Switcher Pill (Bahasa Indonesia / English) */}
           <div className="flex items-center bg-[#1e222d] border border-[#2a2e39] rounded-lg p-0.5 text-[11px] font-bold">
@@ -274,38 +327,49 @@ export const Header: React.FC<HeaderProps> = ({
           {/* TradingView Blue Upgrade Pill Button (matching screenshot) */}
           <button
             id="btn-upgrade-pill"
-            onClick={onOpenProfile}
+            onClick={onOpenProfileWithLock}
             className="px-3.5 py-1.5 rounded-full bg-[#2962ff] hover:bg-[#1e54e4] active:scale-95 text-white text-xs font-bold tracking-tight shadow-md shadow-blue-900/30 transition-all cursor-pointer"
           >
             {t.upgrade}
           </button>
 
-          {/* Settings Button */}
+          {/* Settings Button: Locked with Passcode 708951 */}
           <button
             id="btn-open-settings"
-            onClick={onOpenProfile}
-            title={t.settings}
-            className="p-1.5 rounded-lg text-neutral-300 hover:text-white hover:bg-[#1e222d] transition-colors cursor-pointer"
+            onClick={onOpenProfileWithLock}
+            title={`${t.settings} • Dilindungi Sandi PIN`}
+            className="p-1.5 rounded-lg text-neutral-300 hover:text-white hover:bg-[#1e222d] transition-colors cursor-pointer relative"
           >
             <Settings className="w-4 h-4" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-[#0c0f17]"></span>
           </button>
 
-          {/* User Profile Avatar: "A" in pinkish-purple circle (Achmad Husain, matching screenshot) */}
+          {/* User Profile Avatar: "A" in pinkish-purple circle (Achmad Husain, LOCKED with 708951) */}
           <div className="relative">
             <button
               id="btn-user-avatar"
               onClick={() => setShowUserDropdown(!showUserDropdown)}
-              className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#c2410c] via-[#db2777] to-[#9333ea] flex items-center justify-center text-white font-bold text-sm shadow cursor-pointer border border-white/20 hover:scale-105 transition-transform"
-              title={`${userProfile.name} • Klik untuk profil`}
+              className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#c2410c] via-[#db2777] to-[#9333ea] flex items-center justify-center text-white font-bold text-sm shadow cursor-pointer border border-white/20 hover:scale-105 transition-transform relative"
+              title={`${userProfile.name} • Profil Terkunci Sandi (708951)`}
             >
-              A
+              <span>A</span>
+              {/* Golden Mini Lock Badge */}
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 border border-[#0c0f17] flex items-center justify-center text-[#0c0f17]">
+                <Lock className="w-2 h-2 text-white fill-white" />
+              </span>
             </button>
 
             {/* Dropdown Menu */}
             {showUserDropdown && (
               <div className="absolute right-0 mt-2 w-64 bg-[#1e222d] border border-[#2a2e39] rounded-xl shadow-2xl p-3 space-y-2 z-50 text-xs animate-in fade-in">
                 <div className="border-b border-[#2a2e39] pb-2">
-                  <div className="font-bold text-white text-sm">{userProfile.name}</div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-white text-sm">{userProfile.name}</span>
+                    <span className="flex items-center gap-1 text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 font-bold">
+                      <Lock className="w-2.5 h-2.5" />
+                      <span>PIN 708951</span>
+                    </span>
+                  </div>
                   <div className="text-neutral-400 text-[11px]">{userProfile.email}</div>
                   <div className="mt-1 flex items-center justify-between text-neutral-300 font-mono-num text-[11px]">
                     <span>Saldo:</span>
@@ -317,12 +381,17 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     onClick={() => {
                       setShowUserDropdown(false);
-                      onOpenProfile();
+                      onOpenProfileWithLock();
                     }}
-                    className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-[#252936] text-neutral-200 flex items-center justify-between cursor-pointer"
+                    className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-[#252936] text-neutral-200 flex items-center justify-between cursor-pointer group"
                   >
-                    <span>{t.settingsSubtitle}</span>
-                    <Settings className="w-3.5 h-3.5 text-neutral-400" />
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-300" />
+                      <span>{t.settingsSubtitle}</span>
+                    </div>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 font-mono">
+                      Kunci
+                    </span>
                   </button>
 
                   <div className="px-2.5 py-2 rounded-lg bg-[#161a24] border border-[#262c3b] flex items-center justify-between">
