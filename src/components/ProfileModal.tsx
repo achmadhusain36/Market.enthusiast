@@ -78,9 +78,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const handleResetDefaults = () => {
     setName('Achmad Husain');
     setTitle('Investor Saham & Analis Pasar Global');
-    setCashBalanceUSD(52400);
-    setCashBalanceIDR(838400000);
-    setSelectedCurrency('USD');
+    setCashBalanceUSD(18750);
+    setCashBalanceIDR(300000000);
+    setSelectedCurrency('IDR');
     setRiskProfile('Agresif');
     setLanguage('id');
   };

@@ -40,13 +40,12 @@ import {
   MessageSquare,
   Building2,
   Search,
-  Lock,
 } from 'lucide-react';
 
 export default function App() {
   // 1. Persistent User Profile & Language & Balance (Achmad Husain)
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('market_enthusiast_profile');
+    const saved = localStorage.getItem('market_enthusiast_profile_v17b');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -58,12 +57,12 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('market_enthusiast_profile', JSON.stringify(userProfile));
+    localStorage.setItem('market_enthusiast_profile_v17b', JSON.stringify(userProfile));
   }, [userProfile]);
 
-  // 2. Persistent Holdings State
+  // 2. Persistent Holdings State (11 Diverse Bluechip Stocks Valued at 1.7 Miliar Rupiah)
   const [holdings, setHoldings] = useState<PortfolioHolding[]>(() => {
-    const saved = localStorage.getItem('market_enthusiast_holdings');
+    const saved = localStorage.getItem('market_enthusiast_holdings_v17b');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -75,12 +74,12 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('market_enthusiast_holdings', JSON.stringify(holdings));
+    localStorage.setItem('market_enthusiast_holdings_v17b', JSON.stringify(holdings));
   }, [holdings]);
 
   // 3. Persistent Real-Time Transactions History State
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem('market_enthusiast_transactions');
+    const saved = localStorage.getItem('market_enthusiast_transactions_v17b');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -92,7 +91,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('market_enthusiast_transactions', JSON.stringify(transactions));
+    localStorage.setItem('market_enthusiast_transactions_v17b', JSON.stringify(transactions));
   }, [transactions]);
 
   // 4. Live Global Stocks & Indices State
@@ -158,7 +157,8 @@ export default function App() {
           if (Math.random() > 0.40) return { ...stock, flashDirection: null };
 
           const tickPercent = (Math.random() - 0.49) * 0.004;
-          const decimals = stock.symbol === 'COMPOSITE' ? 4 : 2;
+          const isIdrStock = stock.currency === 'IDR' && stock.symbol !== 'COMPOSITE';
+          const decimals = stock.symbol === 'COMPOSITE' ? 4 : isIdrStock ? 0 : 2;
           const newPrice = Math.max(0.1, Number((stock.price * (1 + tickPercent)).toFixed(decimals)));
           const priceDiff = newPrice - stock.price;
           const newChange = Number((stock.change + priceDiff).toFixed(decimals));
@@ -484,15 +484,6 @@ export default function App() {
           >
             <Search className="w-3.5 h-3.5" />
             <span className="hidden md:inline">{isId ? 'Cari Saham (Ctrl+K)' : 'Search (Ctrl+K)'}</span>
-          </button>
-
-          <button
-            onClick={() => setIsPasscodeModalOpen(true)}
-            className="px-2.5 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-[11px] font-bold flex items-center gap-1 border border-amber-500/30 transition-colors cursor-pointer"
-            title="Profil Achmad Husain dilindungi sandi 708951"
-          >
-            <Lock className="w-3 h-3" />
-            <span className="hidden sm:inline">PIN 708951</span>
           </button>
         </div>
       </div>
