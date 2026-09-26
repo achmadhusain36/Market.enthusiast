@@ -73,8 +73,8 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
       setIsShaking(true);
       setErrorMsg(
         isId
-          ? 'Sandi PIN salah! Silakan coba lagi dengan sandi 708951.'
-          : 'Incorrect passcode! Please try again with PIN 708951.'
+          ? 'Sandi PIN salah! Silakan coba lagi.'
+          : 'Incorrect passcode! Please try again.'
       );
       setTimeout(() => {
         setIsShaking(false);
@@ -245,14 +245,6 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
             >
               ⌫
             </button>
-          </div>
-
-          {/* Passcode Hint Pill */}
-          <div className="w-full bg-[#121622] border border-[#1e2538] rounded-xl p-2.5 text-center">
-            <p className="text-[11px] text-neutral-400">
-              {isId ? 'Sandi keamanan yang ditentukan:' : 'Authorized passcode:'}{' '}
-              <strong className="text-amber-400 tracking-wider font-mono font-bold">708951</strong>
-            </p>
           </div>
         </div>
       </div>

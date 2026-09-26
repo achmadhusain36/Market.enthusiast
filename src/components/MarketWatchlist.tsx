@@ -60,11 +60,11 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
   const isPositive = (val: number) => val >= 0;
 
   return (
-    <div id="tradingview-right-panel" className="flex h-full bg-[#0c0f17] border border-[#1e222d] rounded-none sm:rounded-xl overflow-hidden shadow-2xl">
+    <div id="tradingview-right-panel" className="flex h-full bg-[#000000] border border-[#1c1f26] rounded-none sm:rounded-xl overflow-hidden shadow-2xl">
       {/* 1. Main Watchlist Content Column */}
-      <div className="flex-1 flex flex-col min-w-0 border-r border-[#1e222d] overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 border-r border-[#1c1f26] overflow-y-auto">
         {/* Watchlist Header */}
-        <div className="px-3 py-2.5 border-b border-[#1e222d] flex items-center justify-between bg-[#0c0f17]">
+        <div className="px-3 py-2.5 border-b border-[#1c1f26] flex items-center justify-between bg-[#000000]">
           <div className="flex items-center gap-1.5 cursor-pointer text-white font-bold text-xs hover:text-neutral-200">
             <span>{t.watchlistTitle}</span>
             <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
@@ -74,21 +74,21 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
             <button
               onClick={() => onOpenTrade(activeStock, 'BUY')}
               title="Tambah Simbol"
-              className="p-1 rounded hover:bg-[#1e222d] hover:text-white transition-colors cursor-pointer"
+              className="p-1 rounded hover:bg-[#1a1e28] hover:text-white transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
-            <button className="p-1 rounded hover:bg-[#1e222d] hover:text-white transition-colors cursor-pointer">
+            <button className="p-1 rounded hover:bg-[#1a1e28] hover:text-white transition-colors cursor-pointer">
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
-            <button className="p-1 rounded hover:bg-[#1e222d] hover:text-white transition-colors cursor-pointer">
+            <button className="p-1 rounded hover:bg-[#1a1e28] hover:text-white transition-colors cursor-pointer">
               <MoreHorizontal className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
         {/* Table Column Headers */}
-        <div className="grid grid-cols-12 px-3 py-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-wider border-b border-[#1e222d] bg-[#0e121c]">
+        <div className="grid grid-cols-12 px-3 py-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-wider border-b border-[#1c1f26] bg-[#000000]">
           <div className="col-span-5">{t.colSymbol}</div>
           <div className="col-span-3 text-right">{t.colLast}</div>
           <div className="col-span-2 text-right">{t.colChange}</div>
@@ -212,7 +212,7 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
         </div>
 
         {/* 2. Active Symbol Mini-Overview Card (Matching Screenshot bottom-right) */}
-        <div className="border-t border-[#1e222d] bg-[#0e121a] p-3.5 space-y-2.5">
+        <div className="border-t border-[#1c1f26] bg-[#000000] p-3.5 space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <StockCompanyLogo symbol={activeStock.symbol} market={activeStock.market} size="md" />
@@ -324,7 +324,7 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
       </div>
 
       {/* 2. Far Right Vertical Icon Strip (TradingView 10-icon toolbar) */}
-      <div className="w-10 bg-[#090c14] flex flex-col items-center py-2 justify-between shrink-0 select-none">
+      <div className="w-10 bg-[#000000] border-l border-[#1c1f26] flex flex-col items-center py-2 justify-between shrink-0 select-none">
         {/* Upper Icons */}
         <div className="flex flex-col items-center gap-3">
           <button

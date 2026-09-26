@@ -131,7 +131,7 @@ export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
   return (
     <div
       id="tradingview-bottom-dock"
-      className={`border-t border-[#1e222d] bg-[#0c0f17] transition-all duration-300 flex flex-col ${
+      className={`border-t border-[#1c1f26] bg-[#000000] transition-all duration-300 flex flex-col ${
         isMaximized
           ? 'fixed inset-x-0 bottom-0 top-16 z-50 shadow-2xl'
           : isOpen
@@ -140,7 +140,7 @@ export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
       }`}
     >
       {/* Dock Header Tabs / Toggle Bar */}
-      <div className="px-3 sm:px-4 py-1.5 border-b border-[#1e222d] bg-[#0e121a] flex items-center justify-between gap-2 shrink-0 select-none">
+      <div className="px-3 sm:px-4 py-1.5 border-b border-[#1c1f26] bg-[#000000] flex items-center justify-between gap-2 shrink-0 select-none">
         {/* Left: Tab Buttons (TradingView style tabs: Pine Editor / Strategy Tester / Trading Panel) */}
         <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto text-xs font-semibold">
           <button

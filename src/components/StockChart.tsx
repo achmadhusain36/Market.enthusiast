@@ -182,12 +182,12 @@ export const StockChart: React.FC<StockChartProps> = ({
   return (
     <div
       id="stock-chart-panel"
-      className={`bg-[#0c0f17] border border-[#1e222d] rounded-none sm:rounded-xl flex flex-col overflow-hidden shadow-2xl ${
+      className={`bg-[#000000] border border-[#1c1f26] rounded-none sm:rounded-xl flex flex-col overflow-hidden shadow-2xl ${
         isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'relative'
       }`}
     >
       {/* 1. Top Header Bar (Matching TradingView Screenshot Exactly) */}
-      <div className="px-4 py-3 border-b border-[#1e222d] flex flex-wrap items-center justify-between gap-3 bg-[#0c0f17]">
+      <div className="px-4 py-3 border-b border-[#1c1f26] flex flex-wrap items-center justify-between gap-3 bg-[#000000]">
         {/* Symbol Title, Price, and Superchart Link */}
         <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           {/* Authentic Company / Index Brand Logo */}
@@ -300,7 +300,7 @@ export const StockChart: React.FC<StockChartProps> = ({
       {/* 2. Interactive Chart Canvas & SVG Body */}
       <div
         ref={containerRef}
-        className="w-full relative bg-[#0c0f17] select-none flex-1 min-h-[380px]"
+        className="w-full relative bg-[#000000] select-none flex-1 min-h-[380px]"
         onMouseLeave={handleMouseLeave}
       >
         <svg
@@ -566,7 +566,7 @@ export const StockChart: React.FC<StockChartProps> = ({
       </div>
 
       {/* 3. Timeframe Pills Row (Directly below chart, matching screenshot) */}
-      <div className="border-t border-[#1e222d] bg-[#0c0f17] px-3 py-2 flex items-center justify-between overflow-x-auto gap-1">
+      <div className="border-t border-[#1c1f26] bg-[#000000] px-3 py-2 flex items-center justify-between overflow-x-auto gap-1">
         <div className="flex items-center gap-1 sm:gap-2">
           {timeframeOptions.map((item) => {
             const isActive = timeframe === item.tf;
@@ -577,8 +577,8 @@ export const StockChart: React.FC<StockChartProps> = ({
                 onClick={() => onTimeframeChange(item.tf)}
                 className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-lg transition-all cursor-pointer font-sans ${
                   isActive
-                    ? 'bg-[#2a2e39] text-white shadow-inner'
-                    : 'text-neutral-400 hover:text-neutral-200 hover:bg-[#1e222d]/60'
+                    ? 'bg-[#222735] text-white shadow-inner'
+                    : 'text-neutral-400 hover:text-neutral-200 hover:bg-[#111111]'
                 }`}
               >
                 <span className="text-xs font-semibold whitespace-nowrap">{item.label}</span>
@@ -596,7 +596,7 @@ export const StockChart: React.FC<StockChartProps> = ({
       </div>
 
       {/* 4. Comparison Section: "Bandingkan dengan Indeks Harga Saham Gabungan IDX" */}
-      <div className="border-t border-[#1e222d] bg-[#090c14] p-4 space-y-3">
+      <div className="border-t border-[#1c1f26] bg-[#000000] p-4 space-y-3">
         <h4 className="text-xs sm:text-sm font-bold text-white tracking-tight">
           {t.compareWith}
         </h4>
@@ -609,8 +609,8 @@ export const StockChart: React.FC<StockChartProps> = ({
                 key={idx.id}
                 className={`flex items-center justify-between p-2.5 rounded-xl border transition-all ${
                   isAdded
-                    ? 'bg-[#182030] border-emerald-500/50'
-                    : 'bg-[#131722] border-[#222735] hover:border-[#32394c]'
+                    ? 'bg-[#111827] border-emerald-500/50'
+                    : 'bg-[#0a0d14] border-[#1c1f26] hover:border-[#2a3040]'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">

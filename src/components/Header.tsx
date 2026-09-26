@@ -96,9 +96,9 @@ export const Header: React.FC<HeaderProps> = ({
       : formatCurrency(userProfile.cashBalanceIDR, 'IDR');
 
   return (
-    <header id="main-tradingview-header" className="border-b border-[#1f242e] bg-[#0c0f17] select-none sticky top-0 z-40">
+    <header id="main-tradingview-header" className="border-b border-[#1c1f26] bg-[#000000] select-none sticky top-0 z-40">
       {/* 1. Global Live Ticker Bar (Top Strip) */}
-      <div className="border-b border-[#191d26] px-4 py-1 text-xs flex items-center justify-between overflow-x-auto gap-4 bg-[#090b12]">
+      <div className="border-b border-[#1c1f26] px-4 py-1 text-xs flex items-center justify-between overflow-x-auto gap-4 bg-[#000000]">
         <div className="flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-1.5 font-medium text-neutral-300 text-[11px]">
             <span className="relative flex h-2 w-2">
@@ -356,7 +356,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="btn-user-avatar"
               onClick={() => setShowUserDropdown(!showUserDropdown)}
               className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#c2410c] via-[#db2777] to-[#9333ea] flex items-center justify-center text-white font-bold text-sm shadow cursor-pointer border border-white/20 hover:scale-105 transition-transform relative"
-              title={`${userProfile.name} • Profil Terkunci Sandi (708951)`}
+              title={`${userProfile.name} • Profil Terlindungi Sandi`}
             >
               <span>A</span>
               {/* Golden Mini Lock Badge */}
@@ -373,7 +373,7 @@ export const Header: React.FC<HeaderProps> = ({
                     <span className="font-bold text-white text-sm">{userProfile.name}</span>
                     <span className="flex items-center gap-1 text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 font-bold">
                       <Lock className="w-2.5 h-2.5" />
-                      <span>PIN 708951</span>
+                      <span>{userProfile.language === 'id' ? 'Terkunci' : 'Protected'}</span>
                     </span>
                   </div>
                   <div className="text-neutral-400 text-[11px]">{userProfile.email}</div>
