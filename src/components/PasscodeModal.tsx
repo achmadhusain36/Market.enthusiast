@@ -7,6 +7,9 @@ interface PasscodeModalProps {
   onClose: () => void;
   onSuccess: () => void;
   language?: Language;
+  title?: string;
+  subtitle?: string;
+  actionType?: 'profile' | 'trade' | 'general';
 }
 
 const CORRECT_PIN = '708951';
@@ -15,7 +18,10 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
-  language = 'id',
+  language = 'en',
+  title,
+  subtitle,
+  actionType = 'profile',
 }) => {
   const [pin, setPin] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -112,15 +118,23 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
         {/* Top Header */}
         <div className="px-5 py-4 border-b border-[#1e2434] flex items-center justify-between bg-[#121722]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              actionType === 'trade'
+                ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+                : 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
+            }`}>
               <Lock className="w-4 h-4" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-white tracking-tight">
-                {isId ? 'Profil Terkunci' : 'Locked Profile'}
+                {title || (actionType === 'trade'
+                  ? (isId ? 'Otorisasi PIN Transaksi' : 'Trade PIN Authorization')
+                  : (isId ? 'Profil Terkunci' : 'Locked Profile'))}
               </h3>
               <p className="text-[10px] text-neutral-400">
-                {isId ? 'Keamanan Akun Achmad Husain' : 'Account Security'}
+                {subtitle || (actionType === 'trade'
+                  ? (isId ? 'Akses Eksekusi Jual / Beli Saham' : 'Accessing Buy / Sell Stock Execution')
+                  : (isId ? 'Keamanan Akun Terproteksi' : 'Account Security'))}
               </p>
             </div>
           </div>
@@ -134,18 +148,28 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
 
         {/* Body Content */}
         <div className="p-6 flex flex-col items-center text-center space-y-4">
-          <div className="w-14 h-14 rounded-full bg-[#161d2b] border border-[#25324b] flex items-center justify-center text-[#2962ff] shadow-inner">
+          <div className={`w-14 h-14 rounded-full border flex items-center justify-center shadow-inner ${
+            actionType === 'trade'
+              ? 'bg-[#0f1f1a] border-[#1d4436] text-emerald-400'
+              : 'bg-[#161d2b] border-[#25324b] text-[#2962ff]'
+          }`}>
             <KeyRound className="w-7 h-7" />
           </div>
 
           <div>
             <h4 className="text-base font-bold text-white">
-              {isId ? 'Masukkan Sandi Akses' : 'Enter Security Passcode'}
+              {actionType === 'trade'
+                ? (isId ? 'Masukkan PIN Transaksi' : 'Enter Trade PIN')
+                : (isId ? 'Masukkan Sandi Akses' : 'Enter Security Passcode')}
             </h4>
             <p className="text-xs text-neutral-400 mt-1 max-w-[240px]">
-              {isId
-                ? 'Tombol profil diamankan. Masukkan 6 digit sandi untuk melanjutkan.'
-                : 'Profile is locked. Enter the 6-digit passcode to continue.'}
+              {actionType === 'trade'
+                ? (isId
+                  ? 'Akses jual atau beli memerlukan verifikasi. Masukkan 6 digit PIN untuk melanjutkan.'
+                  : 'Buy or Sell order requires authorization. Enter 6-digit PIN to proceed.')
+                : (isId
+                  ? 'Tombol profil diamankan. Masukkan 6 digit sandi untuk melanjutkan.'
+                  : 'Profile is locked. Enter the 6-digit passcode to continue.')}
             </p>
           </div>
 

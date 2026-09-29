@@ -39,9 +39,9 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
   onSelectStock,
   onOpenTrade,
   selectedCurrency,
-  language,
+  language = 'en',
 }) => {
-  const t = TRANSLATIONS[language || 'id'];
+  const t = TRANSLATIONS[language || 'en'];
   const [activeRightTab, setActiveRightTab] = useState<'watchlist' | 'alerts' | 'news' | 'calendar'>('watchlist');
   const [indicesOpen, setIndicesOpen] = useState(true);
   const [stocksOpen, setStocksOpen] = useState(true);

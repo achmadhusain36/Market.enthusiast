@@ -20,20 +20,20 @@ interface BrokerPageProps {
 }
 
 export const BrokerPage: React.FC<BrokerPageProps> = ({
-  language = 'id',
+  language = 'en',
   userProfile,
   onOpenTrade,
 }) => {
   const isId = language === 'id';
   const [testingPing, setTestingPing] = useState(false);
-  const [lastTestedTime, setLastTestedTime] = useState('Baru saja');
+  const [lastTestedTime, setLastTestedTime] = useState(isId ? 'Baru saja' : 'Just now');
 
   const brokers = [
     {
       id: 'idx-direct',
       name: 'IDX Direct Market Access (DMA)',
-      market: 'Bursa Efek Indonesia (IDX)',
-      status: 'TERHUBUNG',
+      market: isId ? 'Bursa Efek Indonesia (IDX)' : 'Indonesia Stock Exchange (IDX)',
+      status: isId ? 'TERHUBUNG' : 'CONNECTED',
       latency: '14 ms',
       feeBuy: '0.15%',
       feeSell: '0.25%',
@@ -44,7 +44,7 @@ export const BrokerPage: React.FC<BrokerPageProps> = ({
       id: 'mirae',
       name: 'Mirae Asset Sekuritas (HOTSE)',
       market: 'IDX Regular & Cash Market',
-      status: 'TERHUBUNG',
+      status: isId ? 'TERHUBUNG' : 'CONNECTED',
       latency: '18 ms',
       feeBuy: '0.15%',
       feeSell: '0.25%',
@@ -55,7 +55,7 @@ export const BrokerPage: React.FC<BrokerPageProps> = ({
       id: 'mandiri',
       name: 'Mandiri Sekuritas (MOST)',
       market: 'IDX Syariah & Saham BUMN',
-      status: 'SIAGA',
+      status: isId ? 'SIAGA' : 'READY',
       latency: '22 ms',
       feeBuy: '0.18%',
       feeSell: '0.28%',
@@ -66,7 +66,7 @@ export const BrokerPage: React.FC<BrokerPageProps> = ({
       id: 'ibkr',
       name: 'Interactive Brokers LLC (IBKR Global)',
       market: 'NASDAQ, NYSE, S&P 500',
-      status: 'TERHUBUNG',
+      status: isId ? 'TERHUBUNG' : 'CONNECTED',
       latency: '86 ms',
       feeBuy: '$0.005 / share',
       feeSell: '$0.005 / share',
@@ -122,11 +122,11 @@ export const BrokerPage: React.FC<BrokerPageProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-white">{userProfile.name}</span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
-                VERIFIKASI RDN
+                {isId ? 'VERIFIKASI RDN' : 'RDN VERIFIED'}
               </span>
             </div>
             <div className="text-xs text-neutral-400 mt-0.5 font-mono-num">
-              No. RDN: <strong className="text-neutral-200">{userProfile.accountNumber}</strong> • Bank Kustodian: BCA RDN Saham
+              {isId ? 'No. RDN:' : 'RDN Acc:'} <strong className="text-neutral-200">{userProfile.accountNumber}</strong> • {isId ? 'Bank Kustodian: BCA RDN Saham' : 'Custodian Bank: BCA Equity RDN'}
             </div>
           </div>
         </div>
@@ -204,7 +204,7 @@ export const BrokerPage: React.FC<BrokerPageProps> = ({
             <div className="flex items-center justify-between pt-2 border-t border-[#182133] text-xs">
               <span className="text-neutral-400 text-[11px] flex items-center gap-1">
                 <Lock className="w-3 h-3 text-emerald-400" />
-                <span>Enkripsi TLS 1.3 Aktif</span>
+                <span>{isId ? 'Enkripsi TLS 1.3 Aktif' : 'TLS 1.3 Encryption Active'}</span>
               </span>
 
               <button

@@ -14,6 +14,9 @@ import {
   ArrowUpDown,
   Search,
   Filter,
+  Code,
+  Bell,
+  Trash2,
 } from 'lucide-react';
 import {
   PortfolioHolding,
@@ -22,9 +25,12 @@ import {
   UserProfile,
   CurrencyType,
   Language,
+  PriceAlert,
+  PineScriptItem,
 } from '../types';
 import { TRANSLATIONS } from '../utils/translations';
 import { formatCurrency, formatPercent } from '../utils/formatters';
+import { PineScriptEditor } from './PineScriptEditor';
 
 interface TradingViewBottomDockProps {
   holdings: PortfolioHolding[];
@@ -39,6 +45,9 @@ interface TradingViewBottomDockProps {
   isLiveSyncing: boolean;
   isOpen: boolean;
   onToggleOpen: () => void;
+  alerts?: PriceAlert[];
+  onDeleteAlert?: (id: string) => void;
+  onApplyPineScript?: (script: PineScriptItem) => void;
 }
 
 export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
@@ -47,19 +56,24 @@ export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
   stocks,
   userProfile,
   selectedCurrency,
-  language,
+  language = 'en',
   onSelectStock,
   onOpenTrade,
   onOpenProfile,
   isLiveSyncing,
   isOpen,
   onToggleOpen,
+  alerts = [],
+  onDeleteAlert,
+  onApplyPineScript,
 }) => {
-  const t = TRANSLATIONS[language || 'id'];
-  const [activeTab, setActiveTab] = useState<'holdings' | 'transactions' | 'balance'>('transactions');
+  const t = TRANSLATIONS[language || 'en'];
+  const isId = language === 'id';
+  const [activeTab, setActiveTab] = useState<'holdings' | 'transactions' | 'balance' | 'pine' | 'alerts'>('transactions');
   const [txFilter, setTxFilter] = useState<'ALL' | 'BUY' | 'SELL'>('ALL');
   const [txSearch, setTxSearch] = useState('');
   const [isMaximized, setIsMaximized] = useState(false);
+
 
   const stockMap = new Map<string, StockQuote>();
   stocks.forEach((s) => stockMap.set(s.symbol, s));
@@ -122,7 +136,7 @@ export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `transaksi_market_enthusiast_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `transactions_market_enthusiast_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -193,12 +207,48 @@ export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
             <Wallet className="w-3.5 h-3.5 text-amber-400" />
             <span>{t.tabBalance}</span>
           </button>
+
+          {/* Pine Script Editor Tab */}
+          <button
+            onClick={() => {
+              setActiveTab('pine');
+              if (!isOpen) onToggleOpen();
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+              isOpen && activeTab === 'pine'
+                ? 'bg-[#1e222d] text-white font-bold border border-[#2a2e39]'
+                : 'text-neutral-400 hover:text-white'
+            }`}
+          >
+            <Code className="w-3.5 h-3.5 text-purple-400" />
+            <span>Pine Editor</span>
+            <span className="text-[10px] bg-purple-900/40 text-purple-300 px-1 rounded font-mono">v5</span>
+          </button>
+
+          {/* Active Alerts Tab */}
+          <button
+            onClick={() => {
+              setActiveTab('alerts');
+              if (!isOpen) onToggleOpen();
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+              isOpen && activeTab === 'alerts'
+                ? 'bg-[#1e222d] text-white font-bold border border-[#2a2e39]'
+                : 'text-neutral-400 hover:text-white'
+            }`}
+          >
+            <Bell className="w-3.5 h-3.5 text-amber-400" />
+            <span>Alerts</span>
+            <span className="text-[10px] bg-amber-900/40 text-amber-300 px-1.5 py-0.2 rounded font-mono">
+              {alerts.length}
+            </span>
+          </button>
         </div>
 
         {/* Right Dock Controls: Expand/Collapse & Fullscreen */}
         <div className="flex items-center gap-2 text-neutral-400 text-xs shrink-0">
           <div className="hidden md:flex items-center gap-2 font-mono-num text-[11px] mr-2">
-            <span>Kas:</span>
+            <span>{isId ? 'Kas:' : 'Cash:'}</span>
             <span className="text-emerald-400 font-bold">
               {selectedCurrency === 'USD'
                 ? formatCurrency(userProfile.cashBalanceUSD, 'USD')
@@ -238,7 +288,7 @@ export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
                       type="text"
                       value={txSearch}
                       onChange={(e) => setTxSearch(e.target.value)}
-                      placeholder="Cari transaksi / ticker..."
+                      placeholder={isId ? 'Cari transaksi / ticker...' : 'Search transactions / ticker...'}
                       className="w-full bg-[#141824] border border-[#222838] rounded-lg pl-8 pr-3 py-1 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-blue-500"
                     />
                   </div>
@@ -442,7 +492,7 @@ export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
                   onClick={onOpenProfile}
                   className="text-xs text-blue-400 font-bold hover:underline cursor-pointer flex items-center gap-1 pt-1"
                 >
-                  <span>Atur Saldo di Pengaturan</span>
+                  <span>{isId ? 'Atur Saldo di Pengaturan' : 'Manage Cash in Profile'}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -456,13 +506,13 @@ export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
                   onClick={onOpenProfile}
                   className="text-xs text-blue-400 font-bold hover:underline cursor-pointer flex items-center gap-1 pt-1"
                 >
-                  <span>Atur Saldo di Pengaturan</span>
+                  <span>{isId ? 'Atur Saldo di Pengaturan' : 'Manage Cash in Profile'}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
               <div className="bg-[#121622] border border-[#1e2434] rounded-xl p-4 space-y-2">
-                <span className="text-xs text-neutral-400 font-semibold">Total Nilai Portofolio</span>
+                <span className="text-xs text-neutral-400 font-semibold">{isId ? 'Total Nilai Portofolio' : 'Total Portfolio Value'}</span>
                 <div className="text-xl font-extrabold text-emerald-400 font-mono-num">
                   {selectedCurrency === 'USD'
                     ? formatCurrency(totalPortfolioValueUSD, 'USD')
@@ -472,6 +522,76 @@ export const TradingViewBottomDock: React.FC<TradingViewBottomDockProps> = ({
                   Investor: <strong className="text-white">{userProfile.name}</strong>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB 4: PINE SCRIPT EDITOR */}
+          {activeTab === 'pine' && (
+            <div className="h-[280px] sm:h-[340px] flex flex-col">
+              <PineScriptEditor language={language} onApplyScriptToChart={onApplyPineScript} />
+            </div>
+          )}
+
+          {/* TAB 5: ACTIVE PRICE ALERTS ENGINE */}
+          {activeTab === 'alerts' && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#1c2230]">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                    {isId ? 'Daftar Price Alert & Webhook Engine' : 'Active Price Alerts & Webhook Engine'}
+                  </span>
+                </div>
+                <span className="text-[11px] text-neutral-400">
+                  {alerts.length} {isId ? 'Alert Aktif' : 'Active Alerts'}
+                </span>
+              </div>
+
+              {alerts.length === 0 ? (
+                <div className="py-12 text-center text-neutral-500 text-xs">
+                  <Bell className="w-8 h-8 mx-auto mb-2 opacity-30 text-amber-400" />
+                  <p>{isId ? 'Belum ada alert harga aktif. Pasang alert melalui chart atau tombol Alert.' : 'No active price alerts. Create an alert from Superchart top bar.'}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {alerts.map((alt) => (
+                    <div
+                      key={alt.id}
+                      className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs ${
+                        alt.triggered
+                          ? 'bg-amber-950/20 border-amber-500/30'
+                          : 'bg-[#121622] border-[#1e2536]'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2 font-mono">
+                          <span className="font-extrabold text-white text-sm">{alt.symbol}</span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#1e2638] text-neutral-300 uppercase">
+                            {alt.condition.replace('_', ' ')}
+                          </span>
+                          <span className="font-bold text-amber-400">
+                            {alt.targetPrice.toLocaleString()}
+                          </span>
+                        </div>
+                        {alt.note && <p className="text-[11px] text-neutral-400 mt-1">{alt.note}</p>}
+                        <div className="text-[10px] text-neutral-500 mt-1">
+                          {alt.triggered ? `Triggered: ${alt.triggeredAt || 'recent'}` : `Created: ${alt.createdAt}`}
+                        </div>
+                      </div>
+
+                      {onDeleteAlert && (
+                        <button
+                          onClick={() => onDeleteAlert(alt.id)}
+                          className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+                          title="Delete Alert"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

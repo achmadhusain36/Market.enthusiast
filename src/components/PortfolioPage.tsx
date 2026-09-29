@@ -32,7 +32,7 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
   stocks,
   userProfile,
   selectedCurrency,
-  language = 'id',
+  language = 'en',
   onSelectStock,
   onOpenTrade,
   onOpenSearch,
@@ -91,19 +91,32 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
     <div className="w-full flex flex-col gap-5 p-2 sm:p-5 max-w-7xl mx-auto animate-in fade-in">
       {/* 1. Header Banner */}
       <div className="bg-gradient-to-r from-[#0e1422] via-[#121a2c] to-[#0e1422] border border-[#20293d] rounded-2xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <Briefcase className="w-4 h-4" />
-            <span>{isId ? 'Manajemen Aset & Portofolio' : 'Asset & Portfolio Manager'}</span>
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#c2410c] via-[#db2777] to-[#9333ea] flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-xl border-2 border-white/20 shrink-0">
+            {userProfile.avatarUrl ? (
+              <img
+                src={userProfile.avatarUrl}
+                alt={userProfile.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span>{userProfile.name.charAt(0) || 'A'}</span>
+            )}
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-            {isId ? 'Portofolio Investasi Saham' : 'Stock Investment Portfolio'}
-          </h1>
-          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
-            {isId
-              ? `Pemilik Akun: ${userProfile.name} • No. RDN: ${userProfile.accountNumber} • Profil: ${userProfile.riskProfile}`
-              : `Owner: ${userProfile.name} • Account: ${userProfile.accountNumber} • Profile: ${userProfile.riskProfile}`}
-          </p>
+          <div>
+            <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
+              <Briefcase className="w-4 h-4" />
+              <span>{isId ? 'Manajemen Aset & Portofolio' : 'Asset & Portfolio Manager'}</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              {isId ? 'Portofolio Investasi Saham' : 'Stock Investment Portfolio'}
+            </h1>
+            <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+              {isId
+                ? `Pemilik: ${userProfile.name} • No. RDN: ${userProfile.accountNumber} • Profil: ${userProfile.riskProfile}`
+                : `Owner: ${userProfile.name} • Account: ${userProfile.accountNumber} • Profile: ${userProfile.riskProfile}`}
+            </p>
+          </div>
         </div>
 
         {/* Action Button */}
@@ -189,6 +202,7 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
         holdings={holdings}
         stocks={stocks}
         selectedCurrency={selectedCurrency}
+        language={language}
         onSelectStock={(sym) => {
           onSelectStock(sym);
           onNavigateToChart();

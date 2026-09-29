@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { History, Search, ArrowUpRight, ArrowDownRight, Download, Filter, CheckCircle2, RefreshCw, Layers, TrendingUp } from 'lucide-react';
-import { Transaction, StockQuote, CurrencyType } from '../types';
+import { Transaction, StockQuote, CurrencyType, Language } from '../types';
 import { formatCurrency, formatPercent } from '../utils/formatters';
 import { StockCompanyLogo, MarketLogo } from './MarketLogo';
 
@@ -9,6 +9,7 @@ interface TransactionHistoryProps {
   stocks: StockQuote[];
   selectedCurrency: CurrencyType;
   isLiveSyncing: boolean;
+  language?: Language;
   onSelectStock: (symbol: string) => void;
 }
 
@@ -17,8 +18,10 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
   stocks,
   selectedCurrency,
   isLiveSyncing,
+  language = 'en',
   onSelectStock,
 }) => {
+  const isId = language === 'id';
   const [filterType, setFilterType] = useState<'ALL' | 'BUY' | 'SELL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -58,7 +61,9 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
 
   // Export transactions to CSV
   const handleExportCSV = () => {
-    const headers = ['ID Transaksi', 'Tanggal', 'Tipe', 'Simbol', 'Nama', 'Lembar', 'Harga Eksekusi', 'Mata Uang', 'Total', 'Biaya Fee', 'Status'];
+    const headers = isId
+      ? ['ID Transaksi', 'Tanggal', 'Tipe', 'Simbol', 'Nama', 'Lembar', 'Harga Eksekusi', 'Mata Uang', 'Total', 'Biaya Fee', 'Status']
+      : ['Transaction ID', 'Date', 'Type', 'Symbol', 'Name', 'Shares', 'Execution Price', 'Currency', 'Total', 'Fee', 'Status'];
     const rows = transactions.map((t) => [
       t.id,
       t.timestamp,
@@ -77,7 +82,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `riwayat_transaksi_market_enthusiast_${Date.now()}.csv`);
+    link.setAttribute('download', `transactions_market_enthusiast_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -93,15 +98,17 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
               <History className="w-4 h-4" />
             </div>
             <h3 className="text-lg font-bold text-white tracking-tight">
-              Riwayat Transaksi Global
+              {isId ? 'Riwayat Transaksi Global' : 'Global Transaction History'}
             </h3>
             <span className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-[#131b2c] border border-[#22304d] text-emerald-400 font-mono-num">
               <span className={`w-2 h-2 rounded-full ${isLiveSyncing ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-              <span>Sinkronisasi Global Live</span>
+              <span>{isId ? 'Sinkronisasi Global Live' : 'Live Global Sync'}</span>
             </span>
           </div>
           <p className="text-xs text-neutral-400 mt-1">
-            Catatan eksekusi order beli & jual tersinkronisasi otomatis dengan pergerakan harga pasar dunia terkini
+            {isId
+              ? 'Catatan eksekusi order beli & jual tersinkronisasi otomatis dengan pergerakan harga pasar dunia terkini'
+              : 'Real-time order execution ledger synchronized with global market price updates'}
           </p>
         </div>
 
@@ -110,10 +117,10 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
           <button
             onClick={handleExportCSV}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#131a28] hover:bg-[#1a2337] border border-[#212b40] text-neutral-200 text-xs font-medium transition-colors cursor-pointer"
-            title="Download riwayat transaksi format CSV"
+            title={isId ? 'Download riwayat transaksi format CSV' : 'Export transaction history as CSV'}
           >
             <Download className="w-3.5 h-3.5 text-neutral-400" />
-            <span>Ekspor CSV</span>
+            <span>{isId ? 'Ekspor CSV' : 'Export CSV'}</span>
           </button>
         </div>
       </div>
@@ -130,7 +137,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                 : 'text-neutral-400 hover:text-white'
             }`}
           >
-            Semua ({transactions.length})
+            {isId ? 'Semua' : 'All'} ({transactions.length})
           </button>
           <button
             onClick={() => setFilterType('BUY')}
@@ -140,7 +147,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                 : 'text-neutral-400 hover:text-emerald-400'
             }`}
           >
-            Beli / Buy ({transactions.filter((t) => t.type === 'BUY').length})
+            {isId ? 'Beli / Buy' : 'Buy'} ({transactions.filter((t) => t.type === 'BUY').length})
           </button>
           <button
             onClick={() => setFilterType('SELL')}
@@ -150,7 +157,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                 : 'text-neutral-400 hover:text-rose-400'
             }`}
           >
-            Jual / Sell ({transactions.filter((t) => t.type === 'SELL').length})
+            {isId ? 'Jual / Sell' : 'Sell'} ({transactions.filter((t) => t.type === 'SELL').length})
           </button>
         </div>
 
@@ -159,7 +166,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
           <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-2.5" />
           <input
             type="text"
-            placeholder="Cari simbol, nama saham, ID..."
+            placeholder={isId ? 'Cari simbol, nama saham, ID...' : 'Search symbol, name, ID...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#07090f] border border-[#1c263c] focus:border-emerald-500 rounded-xl pl-9 pr-3.5 py-1.5 text-xs text-white placeholder-neutral-500 focus:outline-none transition-colors font-mono-num"
@@ -172,21 +179,21 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-[#0e1422] border-b border-[#182133] text-neutral-400 font-semibold uppercase tracking-wider text-[10px]">
-              <th className="py-3 px-3.5">ID / Waktu</th>
-              <th className="py-3 px-3.5">Tipe</th>
-              <th className="py-3 px-3.5">Aset Saham</th>
-              <th className="py-3 px-3.5 text-right">Volume</th>
-              <th className="py-3 px-3.5 text-right">Harga Beli/Jual</th>
-              <th className="py-3 px-3.5 text-right">Harga Global Live</th>
-              <th className="py-3 px-3.5 text-right">Nilai Total</th>
-              <th className="py-3 px-3.5 text-right">Status & P/L Terkini</th>
+              <th className="py-3 px-3.5">{isId ? 'ID / Waktu' : 'ID / Time'}</th>
+              <th className="py-3 px-3.5">{isId ? 'Tipe' : 'Type'}</th>
+              <th className="py-3 px-3.5">{isId ? 'Aset Saham' : 'Stock Asset'}</th>
+              <th className="py-3 px-3.5 text-right">{isId ? 'Volume' : 'Volume'}</th>
+              <th className="py-3 px-3.5 text-right">{isId ? 'Harga Beli/Jual' : 'Order Price'}</th>
+              <th className="py-3 px-3.5 text-right">{isId ? 'Harga Global Live' : 'Live Price'}</th>
+              <th className="py-3 px-3.5 text-right">{isId ? 'Nilai Total' : 'Total Cost'}</th>
+              <th className="py-3 px-3.5 text-right">{isId ? 'Status & P/L Terkini' : 'Status & P/L'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#141b2b] font-mono-num">
             {filteredTransactions.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-8 text-center text-neutral-500 font-sans">
-                  Tidak ada transaksi yang cocok dengan pencarian.
+                  {isId ? 'Tidak ada transaksi yang cocok dengan pencarian.' : 'No transactions matched your search criteria.'}
                 </td>
               </tr>
             ) : (
@@ -225,12 +232,12 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                         {trx.type === 'BUY' ? (
                           <>
                             <ArrowUpRight className="w-3 h-3" />
-                            <span>BELI</span>
+                            <span>{isId ? 'BELI' : 'BUY'}</span>
                           </>
                         ) : (
                           <>
                             <ArrowDownRight className="w-3 h-3" />
-                            <span>JUAL</span>
+                            <span>{isId ? 'JUAL' : 'SELL'}</span>
                           </>
                         )}
                       </span>
@@ -265,7 +272,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                         {trx.shares.toLocaleString()}
                       </span>
                       <span className="text-[10px] text-neutral-400 ml-1">
-                        {trx.currency === 'IDR' ? `(${trx.shares / 100} lot)` : 'lembar'}
+                        {trx.currency === 'IDR' ? `(${trx.shares / 100} lot)` : (isId ? 'lembar' : 'shares')}
                       </span>
                     </td>
 
@@ -309,7 +316,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                     <td className="py-3 px-3.5 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1 text-emerald-400 text-[11px] font-semibold">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>TEREKSEKUSI</span>
+                        <span>{isId ? 'TEREKSEKUSI' : 'EXECUTED'}</span>
                       </div>
                       {trx.type === 'BUY' && (
                         <div className={`text-[10px] font-semibold ${isProfitable ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -329,12 +336,12 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
       {/* Table Footer Notes */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-neutral-400 pt-1 font-mono-num">
         <div>
-          Total Catatan: <strong className="text-white">{filteredTransactions.length}</strong> transaksi dieksekusi
+          {isId ? 'Total Catatan:' : 'Total Orders:'} <strong className="text-white">{filteredTransactions.length}</strong> {isId ? 'transaksi dieksekusi' : 'orders executed'}
         </div>
         <div className="flex items-center gap-3">
-          <span>Fee Akumulasi: <strong className="text-neutral-200">{formatCurrency(totalFeesPaid, selectedCurrency)}</strong></span>
+          <span>{isId ? 'Fee Akumulasi:' : 'Total Fees:'} <strong className="text-neutral-200">{formatCurrency(totalFeesPaid, selectedCurrency)}</strong></span>
           <span>•</span>
-          <span className="text-emerald-400">Harga Real-Time Terhubung</span>
+          <span className="text-emerald-400">{isId ? 'Harga Real-Time Terhubung' : 'Live Real-Time Market Connected'}</span>
         </div>
       </div>
     </div>

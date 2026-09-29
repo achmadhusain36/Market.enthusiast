@@ -34,7 +34,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onSelectStock,
   onOpenTrade,
   selectedCurrency,
-  language = 'id',
+  language = 'en',
 }) => {
   const [query, setQuery] = useState('');
   const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'IDX' | 'NASDAQ' | 'NYSE' | 'INDEX'>('ALL');

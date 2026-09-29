@@ -19,7 +19,7 @@ export const TransactionsPage: React.FC<TransactionsPageProps> = ({
   stocks,
   selectedCurrency,
   isLiveSyncing,
-  language = 'id',
+  language = 'en',
   onSelectStock,
   onNavigateToChart,
   onOpenTrade,
@@ -60,6 +60,7 @@ export const TransactionsPage: React.FC<TransactionsPageProps> = ({
         stocks={stocks}
         selectedCurrency={selectedCurrency}
         isLiveSyncing={isLiveSyncing}
+        language={language}
         onSelectStock={(sym) => {
           onSelectStock(sym);
           onNavigateToChart();

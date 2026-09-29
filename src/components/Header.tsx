@@ -15,11 +15,20 @@ import {
   History,
   MessageSquare,
   Building2,
+  LogOut,
+  Bell,
+  LayoutDashboard,
+  Grid,
+  Calendar,
+  Camera,
+  Sparkles,
 } from 'lucide-react';
-import { UserProfile, StockQuote, MarketIndex, CurrencyType, Language } from '../types';
+import { UserProfile, StockQuote, MarketIndex, CurrencyType, Language, AppNotification } from '../types';
 import { TRANSLATIONS } from '../utils/translations';
 import { formatCurrency } from '../utils/formatters';
 import { MarketLogo } from './MarketLogo';
+import { NotificationCenterModal } from './NotificationCenterModal';
+import { TerminalLogo } from './TerminalLogo';
 
 interface HeaderProps {
   userProfile: UserProfile;
@@ -29,6 +38,7 @@ interface HeaderProps {
   onToggleCurrency: () => void;
   onOpenProfile: () => void;
   onOpenProfileWithLock: () => void;
+  onOpenProfileWithTab?: (tab: 'payment' | 'profile' | 'language') => void;
   onOpenTrade: () => void;
   isLiveSyncing: boolean;
   onToggleLiveSync: () => void;
@@ -38,6 +48,10 @@ interface HeaderProps {
   onOpenSearch: () => void;
   activeNavTab: string;
   onNavTabChange: (tab: string) => void;
+  onLogout?: () => void;
+  notifications?: AppNotification[];
+  onMarkAllNotificationsRead?: () => void;
+  onClearNotifications?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -48,6 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleCurrency,
   onOpenProfile,
   onOpenProfileWithLock,
+  onOpenProfileWithTab,
   onOpenTrade,
   isLiveSyncing,
   onToggleLiveSync,
@@ -57,11 +72,19 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   activeNavTab,
   onNavTabChange,
+  onLogout,
+  notifications = [],
+  onMarkAllNotificationsRead = () => {},
+  onClearNotifications = () => {},
 }) => {
   const t = TRANSLATIONS[userProfile.language || 'id'];
+  const isId = userProfile.language === 'id';
   const [currentTimeWIB, setCurrentTimeWIB] = useState('');
   const [currentTimeEST, setCurrentTimeEST] = useState('');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
 
   useEffect(() => {
     const updateTime = () => {
@@ -155,24 +178,15 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* 2. Main TradingView Navigation Bar */}
       <div className="px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-4">
-        {/* Left: TradingView Stylized Logo + Search + Nav Items */}
+        {/* Left: Market Terminal Logo + Search + Nav Items */}
         <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-          {/* Logo */}
-          <div className="flex items-center gap-2 shrink-0 cursor-pointer" onClick={() => onNavTabChange('chart')}>
-            {/* TradingView shape icon */}
-            <div className="w-8 h-8 rounded-lg bg-[#1e222d] border border-[#2a2e39] flex items-center justify-center text-white font-bold text-base tracking-tighter hover:border-emerald-500 transition-colors">
-              <svg className="w-5 h-5 fill-white" viewBox="0 0 28 28">
-                <path d="M4 8h5v12H4V8zm7.5-4h5v16h-5V4zm7.5 7h5v9h-5v-9z"/>
-              </svg>
-            </div>
-            <div className="hidden xl:block">
-              <span className="text-sm font-bold text-white tracking-tight leading-none block">
-                TradingView
-              </span>
-              <span className="text-[9px] text-neutral-400 leading-none">
-                Market Enthusiast
-              </span>
-            </div>
+          {/* Terminal Logo */}
+          <div
+            className="flex items-center gap-2 shrink-0 cursor-pointer"
+            onClick={() => onNavTabChange('dashboard')}
+            title="Kembali ke Dashboard Utama"
+          >
+            <TerminalLogo size="sm" showText={true} subtitle="Market Enthusiast" />
           </div>
 
           {/* Interactive Search Bar: Click or Press Ctrl+K opens SearchModal */}
@@ -198,8 +212,21 @@ export const Header: React.FC<HeaderProps> = ({
             <Search className="w-4 h-4" />
           </button>
 
-          {/* Navigation Links (Produk, Pasar, Portofolio, Komunitas, Broker) */}
+          {/* Navigation Links (Dashboard, Superchart, Screener, Heatmap, Calendar, Portfolio, Transactions, Community, Broker) */}
           <nav className="hidden md:flex items-center gap-1 text-xs font-semibold">
+            {/* 0. Dashboard Utama */}
+            <button
+              onClick={() => onNavTabChange('dashboard')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'dashboard'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
+                  : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
+              }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5 text-blue-400" />
+              <span>{isId ? 'Dashboard' : 'Dashboard'}</span>
+            </button>
+
             {/* 1. Superchart */}
             <button
               onClick={() => onNavTabChange('chart')}
@@ -209,7 +236,8 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
               }`}
             >
-              <span>{t.navProducts}</span>
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Supercharts</span>
             </button>
 
             {/* 2. Cari Saham & Pantau (Pasar / Screener) */}
@@ -222,11 +250,36 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <Compass className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{t.navMarkets}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#2962ff]"></span>
+              <span>{isId ? 'Screener' : 'Screener'}</span>
             </button>
 
-            {/* 3. Portofolio Lengkap */}
+            {/* 3. Heatmap Pasar */}
+            <button
+              onClick={() => onNavTabChange('heatmap')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'heatmap'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
+                  : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
+              }`}
+            >
+              <Grid className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Heatmap</span>
+            </button>
+
+            {/* 4. Kalender Ekonomi */}
+            <button
+              onClick={() => onNavTabChange('calendar')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'calendar'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
+                  : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <span>Calendar</span>
+            </button>
+
+            {/* 5. Portofolio Lengkap */}
             <button
               onClick={() => onNavTabChange('portfolio')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
@@ -239,7 +292,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{userProfile.language === 'en' ? 'Portfolio' : 'Portofolio'}</span>
             </button>
 
-            {/* 4. Riwayat Transaksi */}
+            {/* 6. Riwayat Transaksi */}
             <button
               onClick={() => onNavTabChange('transactions')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
@@ -249,10 +302,10 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <History className="w-3.5 h-3.5 text-amber-400" />
-              <span>{userProfile.language === 'en' ? 'Transactions' : 'Riwayat'}</span>
+              <span>{userProfile.language === 'en' ? 'Orders' : 'Riwayat'}</span>
             </button>
 
-            {/* 5. Komunitas & Ide Analisis */}
+            {/* 7. Komunitas & Ide Analisis */}
             <button
               onClick={() => onNavTabChange('community')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
@@ -264,7 +317,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{t.navCommunity}</span>
             </button>
 
-            {/* 6. Broker */}
+            {/* 8. Broker */}
             <button
               onClick={() => onNavTabChange('broker')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
@@ -278,8 +331,33 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
         </div>
 
-        {/* Right Actions: Language Switcher, Currency, Order, Upgrade, Profile Avatar (Locked with 708951) */}
-        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        {/* Right Actions: Language Switcher, Currency, Order, Upgrade, Profile Avatar */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 relative">
+          {/* Notification Center Bell Icon */}
+          <div className="relative">
+            <button
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              className="p-1.5 rounded-lg bg-[#1e222d] hover:bg-[#252a38] text-neutral-300 hover:text-white border border-[#2a2e39] transition-colors cursor-pointer relative"
+              title="Pusat Notifikasi / Alerts"
+            >
+              <Bell className="w-4 h-4 text-amber-400" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-mono font-bold text-[9px] flex items-center justify-center animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Popover Notification Modal */}
+            <NotificationCenterModal
+              isOpen={isNotificationOpen}
+              onClose={() => setIsNotificationOpen(false)}
+              notifications={notifications}
+              onMarkAllAsRead={onMarkAllNotificationsRead}
+              onClearAll={onClearNotifications}
+              language={userProfile.language}
+            />
+          </div>
           {/* Direct Language Switcher Pill (Bahasa Indonesia / English) */}
           <div className="flex items-center bg-[#1e222d] border border-[#2a2e39] rounded-lg p-0.5 text-[11px] font-bold">
             <button
@@ -330,13 +408,15 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden sm:inline">Order</span>
           </button>
 
-          {/* TradingView Blue Upgrade Pill Button (matching screenshot) */}
+          {/* TradingView Blue Pro Pill Button */}
           <button
             id="btn-upgrade-pill"
             onClick={onOpenProfileWithLock}
-            className="px-3.5 py-1.5 rounded-full bg-[#2962ff] hover:bg-[#1e54e4] active:scale-95 text-white text-xs font-bold tracking-tight shadow-md shadow-blue-900/30 transition-all cursor-pointer"
+            className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2962ff] to-[#1e54e4] hover:from-[#1e54e4] hover:to-[#1744b8] active:scale-95 text-white text-xs font-black tracking-wider shadow-md shadow-blue-900/30 transition-all cursor-pointer flex items-center gap-1.5 uppercase"
+            title="Akun Trading PRO (Klik untuk Pengaturan & Saldo)"
           >
-            {t.upgrade}
+            <Sparkles className="w-3 h-3 text-cyan-300 fill-cyan-300" />
+            <span>PRO</span>
           </button>
 
           {/* Settings Button: Locked with Passcode 708951 */}
@@ -350,7 +430,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-[#0c0f17]"></span>
           </button>
 
-          {/* User Profile Avatar: "A" in pinkish-purple circle (Achmad Husain, LOCKED with 708951) */}
+          {/* User Profile Avatar: Displays uploaded photo or initial, LOCKED with 708951 */}
           <div className="relative">
             <button
               id="btn-user-avatar"
@@ -358,7 +438,17 @@ export const Header: React.FC<HeaderProps> = ({
               className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#c2410c] via-[#db2777] to-[#9333ea] flex items-center justify-center text-white font-bold text-sm shadow cursor-pointer border border-white/20 hover:scale-105 transition-transform relative"
               title={`${userProfile.name} • Profil Terlindungi Sandi`}
             >
-              <span>A</span>
+              <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
+                {userProfile.avatarUrl ? (
+                  <img
+                    src={userProfile.avatarUrl}
+                    alt={userProfile.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>{userProfile.name.charAt(0) || 'A'}</span>
+                )}
+              </div>
               {/* Golden Mini Lock Badge */}
               <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 border border-[#0c0f17] flex items-center justify-center text-[#0c0f17]">
                 <Lock className="w-2 h-2 text-white fill-white" />
@@ -367,40 +457,75 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Dropdown Menu */}
             {showUserDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-[#1e222d] border border-[#2a2e39] rounded-xl shadow-2xl p-3 space-y-2 z-50 text-xs animate-in fade-in">
-                <div className="border-b border-[#2a2e39] pb-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white text-sm">{userProfile.name}</span>
-                    <span className="flex items-center gap-1 text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 font-bold">
-                      <Lock className="w-2.5 h-2.5" />
-                      <span>{userProfile.language === 'id' ? 'Terkunci' : 'Protected'}</span>
-                    </span>
+              <div className="absolute right-0 mt-2 w-72 bg-[#1e222d] border border-[#2a2e39] rounded-2xl shadow-2xl p-3.5 space-y-2.5 z-50 text-xs animate-in fade-in">
+                {/* Profile Card Header with Photo */}
+                <div className="border-b border-[#2a2e39] pb-3 flex items-start gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-tr from-[#c2410c] via-[#db2777] to-[#9333ea] flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0 border border-white/20 relative group">
+                    {userProfile.avatarUrl ? (
+                      <img
+                        src={userProfile.avatarUrl}
+                        alt={userProfile.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{userProfile.name.charAt(0) || 'A'}</span>
+                    )}
                   </div>
-                  <div className="text-neutral-400 text-[11px]">{userProfile.email}</div>
-                  <div className="mt-1 flex items-center justify-between text-neutral-300 font-mono-num text-[11px]">
-                    <span>Saldo:</span>
-                    <span className="text-emerald-400 font-bold">{activeCashFormatted}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white text-sm truncate">{userProfile.name}</span>
+                      <span className="flex items-center gap-1 text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20 font-bold shrink-0">
+                        <Lock className="w-2.5 h-2.5" />
+                        <span>{userProfile.language === 'id' ? 'Terkunci' : 'Protected'}</span>
+                      </span>
+                    </div>
+                    <div className="text-neutral-400 text-[11px] truncate">{userProfile.email}</div>
+                    <div className="mt-1 flex items-center justify-between text-neutral-300 font-mono-num text-[11px]">
+                      <span>{userProfile.language === 'id' ? 'Saldo:' : 'Balance:'}</span>
+                      <span className="text-emerald-400 font-bold">{activeCashFormatted}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
+                  {/* Quick Photo Upload & Avatar Settings Button */}
+                  <button
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      if (onOpenProfileWithTab) {
+                        onOpenProfileWithTab('profile');
+                      } else {
+                        onOpenProfileWithLock();
+                      }
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl bg-gradient-to-r from-[#2962ff]/20 to-transparent hover:from-[#2962ff]/30 text-white flex items-center justify-between cursor-pointer border border-[#2962ff]/30 group transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Camera className="w-4 h-4 text-[#2962ff] group-hover:scale-110 transition-transform" />
+                      <span className="font-semibold">{userProfile.language === 'id' ? 'Upload / Ganti Foto Profil' : 'Upload / Change Photo'}</span>
+                    </div>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#2962ff]/30 text-[#82aaff] font-bold">
+                      {userProfile.language === 'id' ? 'Foto' : 'Photo'}
+                    </span>
+                  </button>
+
                   <button
                     onClick={() => {
                       setShowUserDropdown(false);
                       onOpenProfileWithLock();
                     }}
-                    className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-[#252936] text-neutral-200 flex items-center justify-between cursor-pointer group"
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#252936] text-neutral-200 flex items-center justify-between cursor-pointer group transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <Lock className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-300" />
                       <span>{t.settingsSubtitle}</span>
                     </div>
                     <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 font-mono">
-                      Kunci
+                      {userProfile.language === 'id' ? 'Kunci PIN' : 'PIN Lock'}
                     </span>
                   </button>
 
-                  <div className="px-2.5 py-2 rounded-lg bg-[#161a24] border border-[#262c3b] flex items-center justify-between">
+                  <div className="px-3 py-2 rounded-xl bg-[#161a24] border border-[#262c3b] flex items-center justify-between">
                     <span className="text-neutral-300 font-medium">Language:</span>
                     <div className="flex items-center gap-1">
                       <button
@@ -421,6 +546,19 @@ export const Header: React.FC<HeaderProps> = ({
                       </button>
                     </div>
                   </div>
+
+                  {onLogout && (
+                    <button
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        onLogout();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-rose-500/10 text-rose-400 hover:text-rose-300 flex items-center gap-2 cursor-pointer transition-colors border border-rose-500/20"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span className="font-semibold">{userProfile.language === 'id' ? 'Keluar Akun (Logout)' : 'Sign Out (Logout)'}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}

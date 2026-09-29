@@ -1,6 +1,6 @@
 import React from 'react';
 import { Briefcase, ArrowUpRight, ArrowDownRight, Plus, Minus, ArrowUpDown } from 'lucide-react';
-import { PortfolioHolding, StockQuote, CurrencyType } from '../types';
+import { PortfolioHolding, StockQuote, CurrencyType, Language } from '../types';
 import { formatCurrency, formatPercent } from '../utils/formatters';
 import { MarketLogo, StockCompanyLogo } from './MarketLogo';
 
@@ -8,6 +8,7 @@ interface HoldingsTableProps {
   holdings: PortfolioHolding[];
   stocks: StockQuote[];
   selectedCurrency: CurrencyType;
+  language?: Language;
   onSelectStock: (symbol: string) => void;
   onOpenTrade: (stock: StockQuote, type: 'BUY' | 'SELL') => void;
 }
@@ -16,9 +17,11 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
   holdings,
   stocks,
   selectedCurrency,
+  language = 'en',
   onSelectStock,
   onOpenTrade,
 }) => {
+  const isId = language === 'id';
   const stockMap = new Map<string, StockQuote>();
   stocks.forEach((s) => stockMap.set(s.symbol, s));
 
@@ -31,15 +34,15 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
           </div>
           <div>
             <h3 className="text-base font-bold text-white tracking-tight">
-              Portofolio Saham Dimiliki
+              {isId ? 'Portofolio Saham Dimiliki' : 'Current Stock Holdings'}
             </h3>
             <p className="text-xs text-neutral-400">
-              Posisi aktif Achmad Husain di pasar ekuitas global
+              {isId ? 'Posisi aktif Achmad Husain di pasar ekuitas global' : 'Active equity positions in global and IDX markets'}
             </p>
           </div>
         </div>
         <span className="text-xs font-mono-num text-neutral-400">
-          Total Posisi: <strong className="text-white">{holdings.length}</strong> Emiten
+          {isId ? 'Total Posisi:' : 'Total Holdings:'} <strong className="text-white">{holdings.length}</strong> {isId ? 'Emiten' : 'Stocks'}
         </span>
       </div>
 
@@ -47,20 +50,22 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-[#0e1422] border-b border-[#182133] text-neutral-400 font-semibold uppercase tracking-wider text-[10px]">
-              <th className="py-3 px-3.5">Aset Saham</th>
-              <th className="py-3 px-3.5 text-right">Jumlah Lembar</th>
-              <th className="py-3 px-3.5 text-right">Harga Rata-rata Beli</th>
-              <th className="py-3 px-3.5 text-right">Harga Pasar Global</th>
-              <th className="py-3 px-3.5 text-right">Nilai Sekarang</th>
+              <th className="py-3 px-3.5">{isId ? 'Aset Saham' : 'Stock Asset'}</th>
+              <th className="py-3 px-3.5 text-right">{isId ? 'Jumlah Lembar' : 'Shares / Lots'}</th>
+              <th className="py-3 px-3.5 text-right">{isId ? 'Harga Rata-rata Beli' : 'Avg Buy Price'}</th>
+              <th className="py-3 px-3.5 text-right">{isId ? 'Harga Pasar Global' : 'Market Price'}</th>
+              <th className="py-3 px-3.5 text-right">{isId ? 'Nilai Sekarang' : 'Market Value'}</th>
               <th className="py-3 px-3.5 text-right">Unrealized P/L</th>
-              <th className="py-3 px-3.5 text-center">Aksi Cepat</th>
+              <th className="py-3 px-3.5 text-center">{isId ? 'Aksi Cepat' : 'Trade'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#141b2b] font-mono-num">
             {holdings.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-8 text-center text-neutral-500 font-sans">
-                  Belum ada saham yang dimiliki. Lakukan order beli pada saham global pilihan Anda.
+                  {isId
+                    ? 'Belum ada saham yang dimiliki. Lakukan order beli pada saham global pilihan Anda.'
+                    : 'No stocks currently held. Explore and buy shares from the global markets.'}
                 </td>
               </tr>
             ) : (
@@ -112,7 +117,7 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
                         {holding.shares.toLocaleString()}
                       </span>
                       <span className="text-[10px] text-neutral-400 ml-1">
-                        {isIDX ? `(${holding.shares / 100} lot)` : 'lbr'}
+                        {isIDX ? `(${holding.shares / 100} lot)` : (isId ? 'lbr' : 'shrs')}
                       </span>
                     </td>
 
@@ -156,7 +161,7 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
                             e.stopPropagation();
                             if (stock) onOpenTrade(stock, 'BUY');
                           }}
-                          title="Beli Tambah Saham Ini"
+                          title={isId ? 'Beli Tambah Saham Ini' : 'Buy More Shares'}
                           className="p-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white transition-all cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
@@ -166,7 +171,7 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
                             e.stopPropagation();
                             if (stock) onOpenTrade(stock, 'SELL');
                           }}
-                          title="Jual Posisi Saham Ini"
+                          title={isId ? 'Jual Posisi Saham Ini' : 'Sell Position'}
                           className="p-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white transition-all cursor-pointer"
                         >
                           <Minus className="w-3.5 h-3.5" />

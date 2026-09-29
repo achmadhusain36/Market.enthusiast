@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ArrowUpDown, AlertCircle, CheckCircle2, ShieldAlert, DollarSign, Wallet } from 'lucide-react';
+import { X, ArrowUpDown, AlertCircle, CheckCircle2, ShieldAlert, ShieldCheck, DollarSign, Wallet } from 'lucide-react';
 import { StockQuote, UserProfile, PortfolioHolding } from '../types';
 import { formatCurrency, formatPercent } from '../utils/formatters';
 import { TRANSLATIONS } from '../utils/translations';
@@ -92,9 +92,13 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <span>{t.tradeModalTitle} {stock.symbol}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-mono font-bold">
+                  <ShieldCheck className="w-3 h-3" />
+                  PIN OK
+                </span>
               </h3>
               <p className="text-xs text-neutral-400">
-                {userProfile.language === 'id' ? 'Sinkronisasi pasar global real-time' : 'Real-time global market sync'}
+                {userProfile.language === 'id' ? 'Otorisasi PIN Transaksi Terverifikasi' : 'Trade PIN Authorized'}
               </p>
             </div>
           </div>
@@ -165,7 +169,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             <div className="flex items-center justify-between text-xs px-1 text-neutral-400">
               <span>{t.ownedUnits}:</span>
               <span className="font-mono-num font-bold text-amber-400">
-                {ownedShares.toLocaleString()} {isIDX ? 'Lembar' : 'Shares'}
+                {ownedShares.toLocaleString()} {isIDX ? (userProfile.language === 'id' ? 'Lembar' : 'Shares') : 'Shares'}
                 {isIDX ? ` (${(ownedShares / 100).toFixed(0)} Lot)` : ''}
               </span>
             </div>
@@ -174,7 +178,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
           {/* Shares / Quantity input */}
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold text-neutral-300">
-              {t.orderQuantity} ({isIDX ? 'Lembar Saham' : 'Shares'})
+              {t.orderQuantity} ({isIDX ? (userProfile.language === 'id' ? 'Lembar Saham' : 'Shares') : 'Shares'})
             </label>
             <div className="relative">
               <input
@@ -270,7 +274,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
           >
             {executionSuccess
               ? t.orderProcessed
-              : `${tradeType === 'BUY' ? t.confirmBuy : t.confirmSell} ${shares} ${isIDX ? 'Lembar' : 'Shares'}`}
+              : `${tradeType === 'BUY' ? t.confirmBuy : t.confirmSell} ${shares} ${isIDX ? (userProfile.language === 'id' ? 'Lembar' : 'Shares') : 'Shares'}`}
           </button>
         </form>
       </div>

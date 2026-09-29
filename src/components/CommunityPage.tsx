@@ -12,11 +12,12 @@ import {
   Eye,
   CheckCircle2,
 } from 'lucide-react';
-import { Language, StockQuote } from '../types';
+import { Language, StockQuote, UserProfile } from '../types';
 
 interface CommunityPageProps {
   language?: Language;
   stocks: StockQuote[];
+  userProfile?: UserProfile;
   onSelectStock: (symbol: string) => void;
   onNavigateToChart: () => void;
 }
@@ -25,6 +26,7 @@ interface IdeaPost {
   id: string;
   author: string;
   avatar: string;
+  avatarUrl?: string;
   role: string;
   symbol: string;
   sentiment: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
@@ -37,8 +39,9 @@ interface IdeaPost {
 }
 
 export const CommunityPage: React.FC<CommunityPageProps> = ({
-  language = 'id',
+  language = 'en',
   stocks,
+  userProfile,
   onSelectStock,
   onNavigateToChart,
 }) => {
@@ -49,16 +52,21 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
       id: 'post-1',
       author: 'Hendro Wijaya, CFA',
       avatar: 'HW',
-      role: 'Senior Technical Strategist',
+      role: isId ? 'Senior Technical Strategist' : 'Senior Technical Strategist',
       symbol: 'BBCA.JK',
       sentiment: 'BULLISH',
-      title: 'BBCA Menguji Support Kuat 10.350 - Peluang Swing Buy Menuju Target 11.200',
-      content:
-        'Volume akumulasi asing kembali mencatatkan inflow Rp 350 Milyar pada sesi 2. Indikator RSI harian menunjukkan sinyal golden cross rebound dari area oversold 42. Disarankan akumulasi bertahap dengan batas risiko (stop loss) di bawah 10.150.',
-      timeAgo: '2 jam yang lalu',
+      title: isId
+        ? 'BBCA Menguji Support Kuat 10.350 - Peluang Swing Buy Menuju Target 11.200'
+        : 'BBCA Testing Major Support at 10,350 - Swing Buy Opportunity Toward 11,200 Target',
+      content: isId
+        ? 'Volume akumulasi asing kembali mencatatkan inflow Rp 350 Milyar pada sesi 2. Indikator RSI harian menunjukkan sinyal golden cross rebound dari area oversold 42. Disarankan akumulasi bertahap dengan batas risiko (stop loss) di bawah 10.150.'
+        : 'Foreign accumulation logged Rp 350B inflow in session 2. Daily RSI indicator shows golden cross reversal from oversold 42. Accumulate on dips with stop loss below 10,150.',
+      timeAgo: isId ? '2 jam yang lalu' : '2 hours ago',
       likes: 84,
       comments: 19,
-      chartImgNote: 'Double Bottom Setup pada timeframe 4 Jam (Target: 11.200)',
+      chartImgNote: isId
+        ? 'Double Bottom Setup pada timeframe 4 Jam (Target: 11.200)'
+        : 'Double Bottom Setup on 4-Hour timeframe (Target: 11,200)',
     },
     {
       id: 'post-2',
@@ -70,7 +78,7 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
       title: 'NVIDIA Blackwell Architecture Deployment Exceeding Guidance',
       content:
         'Hyperscaler capex projections for Q3/Q4 confirm sustained compute acceleration demand. NVIDIA price holding firmly above the $135 MA-20 line. Breakout resistance targets $150 prior to upcoming earnings catalyst.',
-      timeAgo: '4 jam yang lalu',
+      timeAgo: isId ? '4 jam yang lalu' : '4 hours ago',
       likes: 142,
       comments: 38,
       chartImgNote: 'Ascending Triangle continuation pattern on Daily chart',
@@ -82,10 +90,13 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
       role: 'Macro Analyst',
       symbol: 'COMPOSITE',
       sentiment: 'NEUTRAL',
-      title: 'IHSG Berkonsolidasi di Kisaran 6.480 - 6.550 Menanti Keputusan Suku Bunga BI',
-      content:
-        'Tekanan jual pada sektor komoditas dan batubara diimbangi penguatan saham perbankan big cap. Range trading masih dominan. Perhatikan level kritis 6.450 sebagai batas support psikologis bulanan.',
-      timeAgo: '7 jam yang lalu',
+      title: isId
+        ? 'IHSG Berkonsolidasi di Kisaran 6.480 - 6.550 Menanti Keputusan Suku Bunga BI'
+        : 'IDX Composite Consolidating in 6,480 - 6,550 Range Ahead of BI Rate Decision',
+      content: isId
+        ? 'Tekanan jual pada sektor komoditas dan batubara diimbangi penguatan saham perbankan big cap. Range trading masih dominan. Perhatikan level kritis 6.450 sebagai batas support psikologis bulanan.'
+        : 'Selling pressure in commodities offset by inflows into big-cap banking stocks. Range trading remains dominant. Keep an eye on 6,450 critical support.',
+      timeAgo: isId ? '7 jam yang lalu' : '7 hours ago',
       likes: 65,
       comments: 12,
       chartImgNote: 'Symmetrical Triangle compression on IHSG Index',
@@ -106,19 +117,21 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
     e.preventDefault();
     if (!newComment.trim()) return;
 
+    const authorName = userProfile?.name || 'Achmad Husain';
     const newEntry: IdeaPost = {
       id: `post-${Date.now()}`,
-      author: 'Achmad Husain',
-      avatar: 'AH',
-      role: 'Investor Saham & Analis Pasar',
+      author: authorName,
+      avatar: authorName.charAt(0) || 'AH',
+      avatarUrl: userProfile?.avatarUrl,
+      role: userProfile?.title || (isId ? 'Investor Saham & Analis Pasar' : 'Stock Investor & Market Analyst'),
       symbol: selectedSymbolForPost,
       sentiment: 'BULLISH',
-      title: `Analisis Pasar Terbaru: ${selectedSymbolForPost}`,
+      title: isId ? `Analisis Pasar Terbaru: ${selectedSymbolForPost}` : `Latest Market Analysis: ${selectedSymbolForPost}`,
       content: newComment.trim(),
-      timeAgo: 'Baru saja',
+      timeAgo: isId ? 'Baru saja' : 'Just now',
       likes: 1,
       comments: 0,
-      chartImgNote: 'Setup teknikal aktif pada platform Market Enthusiast',
+      chartImgNote: isId ? 'Setup teknikal aktif pada platform Market Enthusiast' : 'Active technical setup on Pro Terminal',
     };
 
     setPosts([newEntry, ...posts]);
@@ -202,7 +215,7 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
 
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-neutral-500">
-                  {isId ? 'Sebagai: Achmad Husain' : 'Posting as: Achmad Husain'}
+                  {isId ? `Sebagai: ${userProfile?.name || 'Achmad Husain'}` : `Posting as: ${userProfile?.name || 'Achmad Husain'}`}
                 </span>
                 <button
                   type="submit"
@@ -229,8 +242,16 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
                   {/* Post Top: Author Info & Symbol Badge */}
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#2962ff] to-[#22ab94] flex items-center justify-center font-bold text-xs text-white">
-                        {post.avatar}
+                      <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-tr from-[#2962ff] to-[#22ab94] flex items-center justify-center font-bold text-xs text-white shrink-0 border border-white/10">
+                        {post.avatarUrl ? (
+                          <img
+                            src={post.avatarUrl}
+                            alt={post.author}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          post.avatar
+                        )}
                       </div>
                       <div>
                         <div className="font-bold text-white text-xs sm:text-sm flex items-center gap-1.5">
@@ -334,31 +355,37 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
             <div className="space-y-2.5 text-xs">
               <div className="p-2.5 rounded-xl bg-[#131927] border border-[#1e283d] space-y-1">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-bold text-white">Rapat Dewan Gubernur BI</span>
+                  <span className="font-bold text-white">{isId ? 'Rapat Dewan Gubernur BI' : 'Bank Indonesia Rate Decision'}</span>
                   <span className="text-emerald-400 font-mono">17 Sep 2026</span>
                 </div>
                 <p className="text-neutral-400 text-[11px]">
-                  Konsensus proyeksi suku bunga acuan BI 7-Day Reverse Repo Rate bertahan di 6.00%.
+                  {isId
+                    ? 'Konsensus proyeksi suku bunga acuan BI 7-Day Reverse Repo Rate bertahan di 6.00%.'
+                    : 'Consensus forecast for BI 7-Day Reverse Repo Rate holds steady at 6.00%.'}
                 </p>
               </div>
 
               <div className="p-2.5 rounded-xl bg-[#131927] border border-[#1e283d] space-y-1">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-bold text-white">US FOMC Interest Rate Decision</span>
+                  <span className="font-bold text-white">{isId ? 'US FOMC Interest Rate Decision' : 'US FOMC Interest Rate Decision'}</span>
                   <span className="text-cyan-400 font-mono">18 Sep 2026</span>
                 </div>
                 <p className="text-neutral-400 text-[11px]">
-                  Ekspektasi pemangkasan suku bunga 25 bps oleh Federal Reserve AS.
+                  {isId
+                    ? 'Ekspektasi pemangkasan suku bunga 25 bps oleh Federal Reserve AS.'
+                    : 'Expected 25 bps interest rate reduction by the US Federal Reserve.'}
                 </p>
               </div>
 
               <div className="p-2.5 rounded-xl bg-[#131927] border border-[#1e283d] space-y-1">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-bold text-white">Rilis Neraca Perdagangan RI</span>
+                  <span className="font-bold text-white">{isId ? 'Rilis Neraca Perdagangan RI' : 'Indonesia Trade Balance Report'}</span>
                   <span className="text-amber-400 font-mono">20 Sep 2026</span>
                 </div>
                 <p className="text-neutral-400 text-[11px]">
-                  Surplus neraca perdagangan diperkirakan mencapai US$ 2.8 Milyar.
+                  {isId
+                    ? 'Surplus neraca perdagangan diperkirakan mencapai US$ 2.8 Milyar.'
+                    : 'Trade balance surplus estimated to reach US$ 2.8 Billion.'}
                 </p>
               </div>
             </div>
