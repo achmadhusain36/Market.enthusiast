@@ -1,6 +1,6 @@
 import React from 'react';
 import { Briefcase, ArrowUpRight, ArrowDownRight, Plus, Minus, ArrowUpDown } from 'lucide-react';
-import { PortfolioHolding, StockQuote, CurrencyType, Language } from '../types';
+import { PortfolioHolding, StockQuote, CurrencyType, Language, MarketType } from '../types';
 import { formatCurrency, formatPercent } from '../utils/formatters';
 import { MarketLogo, StockCompanyLogo } from './MarketLogo';
 
@@ -78,6 +78,24 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
                 const pnlPercent = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
                 const isProfitable = pnl >= 0;
                 const isIDX = holding.currency === 'IDR';
+                const targetQuote: StockQuote = stock || {
+                  symbol: holding.symbol,
+                  name: holding.name,
+                  price: holding.avgBuyPrice,
+                  change: 0,
+                  changePercent: 0,
+                  high: holding.avgBuyPrice,
+                  low: holding.avgBuyPrice,
+                  previousClose: holding.avgBuyPrice,
+                  volume: 1000000,
+                  marketCap: 'N/A',
+                  peRatio: 15,
+                  sparkline: [holding.avgBuyPrice, holding.avgBuyPrice],
+                  lastUpdated: 'Live',
+                  market: (holding.currency === 'IDR' ? 'IDX' : 'NASDAQ') as MarketType,
+                  currency: holding.currency,
+                  sector: 'Equities',
+                };
 
                 return (
                   <tr
@@ -159,7 +177,7 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (stock) onOpenTrade(stock, 'BUY');
+                            onOpenTrade(targetQuote, 'BUY');
                           }}
                           title={isId ? 'Beli Tambah Saham Ini' : 'Buy More Shares'}
                           className="p-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white transition-all cursor-pointer"
@@ -169,7 +187,7 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (stock) onOpenTrade(stock, 'SELL');
+                            onOpenTrade(targetQuote, 'SELL');
                           }}
                           title={isId ? 'Jual Posisi Saham Ini' : 'Sell Position'}
                           className="p-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white transition-all cursor-pointer"

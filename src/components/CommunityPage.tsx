@@ -106,11 +106,59 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
   const [newComment, setNewComment] = useState('');
   const [selectedSymbolForPost, setSelectedSymbolForPost] = useState('BBCA.JK');
   const [likedPosts, setLikedPosts] = useState<string[]>([]);
+  const [savedPosts, setSavedPosts] = useState<string[]>([]);
+  const [openCommentsPostId, setOpenCommentsPostId] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState('');
+  const [shareToastId, setShareToastId] = useState<string | null>(null);
+
+  const [postCommentsMap, setPostCommentsMap] = useState<Record<string, { id: string; author: string; text: string; time: string }[]>>({
+    'post-1': [
+      { id: 'c-1', author: 'Rizky Pratama', text: isId ? 'Setup yang sangat menarik, saya antre beli di 10.375.' : 'Great setup, placed limit order at 10,375.', time: '1 jam lalu' },
+      { id: 'c-2', author: 'Siti Aminah', text: isId ? 'Bagaimana target resistance 11.000 jika asing terus akumulasi?' : 'What about resistance 11,000 if foreign inflows continue?', time: '30 mnt lalu' },
+    ],
+    'post-2': [
+      { id: 'c-3', author: 'David S.', text: 'Guidance beat looks very likely with new datacenter contracts.', time: '2h ago' },
+    ],
+    'post-3': [
+      { id: 'c-4', author: 'Agus Santoso', text: isId ? 'Tetap hati-hati dengan volatilitas nilai tukar Rupiah.' : 'Keep an eye on USD/IDR currency fluctuations.', time: '3h ago' },
+    ],
+  });
 
   const toggleLike = (id: string) => {
     setLikedPosts((prev) =>
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
     );
+  };
+
+  const toggleBookmark = (id: string) => {
+    setSavedPosts((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+    );
+  };
+
+  const handleSharePost = (id: string) => {
+    navigator.clipboard?.writeText?.(`${window.location.origin}/#community-${id}`);
+    setShareToastId(id);
+    setTimeout(() => setShareToastId(null), 2000);
+  };
+
+  const handleAddComment = (postId: string) => {
+    if (!commentText.trim()) return;
+    const authorName = userProfile?.name || 'Achmad Husain';
+    const newC = {
+      id: `c-${Date.now()}`,
+      author: authorName,
+      text: commentText.trim(),
+      time: isId ? 'Baru saja' : 'Just now',
+    };
+    setPostCommentsMap((prev) => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), newC],
+    }));
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, comments: p.comments + 1 } : p))
+    );
+    setCommentText('');
   };
 
   const handleCreatePost = (e: React.FormEvent) => {
@@ -308,19 +356,54 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
 
                   {/* Action Bar */}
                   <div className="flex items-center justify-between pt-2 border-t border-[#172031] text-xs text-neutral-400">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <button
                         onClick={() => toggleLike(post.id)}
                         className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
                           isLiked ? 'text-rose-400 font-bold' : 'hover:text-white'
                         }`}
+                        title="Like"
                       >
                         <ThumbsUp className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
                         <span>{post.likes + (isLiked ? 1 : 0)}</span>
                       </button>
-                      <button className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
+
+                      <button
+                        onClick={() =>
+                          setOpenCommentsPostId(openCommentsPostId === post.id ? null : post.id)
+                        }
+                        className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
+                          openCommentsPostId === post.id ? 'text-cyan-400 font-bold' : 'hover:text-white'
+                        }`}
+                        title={isId ? 'Lihat & Tulis Komentar' : 'View & Write Comments'}
+                      >
                         <MessageSquare className="w-4 h-4" />
                         <span>{post.comments}</span>
+                      </button>
+
+                      <button
+                        onClick={() => toggleBookmark(post.id)}
+                        className={`flex items-center gap-1 transition-colors cursor-pointer ${
+                          savedPosts.includes(post.id) ? 'text-amber-400 font-bold' : 'hover:text-white'
+                        }`}
+                        title={savedPosts.includes(post.id) ? (isId ? 'Tersimpan' : 'Saved') : (isId ? 'Simpan Analisis' : 'Bookmark')}
+                      >
+                        <Bookmark className={`w-4 h-4 ${savedPosts.includes(post.id) ? 'fill-current' : ''}`} />
+                        <span className="hidden sm:inline">{savedPosts.includes(post.id) ? (isId ? 'Tersimpan' : 'Saved') : (isId ? 'Simpan' : 'Save')}</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleSharePost(post.id)}
+                        className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer relative"
+                        title={isId ? 'Bagikan Ide' : 'Share Idea'}
+                      >
+                        <Share2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">{isId ? 'Bagikan' : 'Share'}</span>
+                        {shareToastId === post.id && (
+                          <span className="absolute -top-7 left-0 bg-neutral-900 border border-neutral-700 text-white text-[10px] px-2 py-0.5 rounded whitespace-nowrap z-20 animate-in fade-in">
+                            {isId ? 'Tautan disalin!' : 'Link copied!'}
+                          </span>
+                        )}
                       </button>
                     </div>
 
@@ -335,6 +418,56 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
                       <span>→</span>
                     </button>
                   </div>
+
+                  {/* Expanded Comments Thread */}
+                  {openCommentsPostId === post.id && (
+                    <div className="pt-3 border-t border-[#182133] space-y-3 animate-in fade-in">
+                      <div className="space-y-2">
+                        {(postCommentsMap[post.id] || []).length === 0 ? (
+                          <p className="text-[11px] text-neutral-500 italic">
+                            {isId ? 'Belum ada komentar. Jadilah yang pertama berkomentar!' : 'No comments yet. Be the first to comment!'}
+                          </p>
+                        ) : (
+                          (postCommentsMap[post.id] || []).map((c) => (
+                            <div
+                              key={c.id}
+                              className="p-2.5 rounded-xl bg-[#111726] border border-[#1b253b] text-xs space-y-1"
+                            >
+                              <div className="flex items-center justify-between text-[11px]">
+                                <span className="font-bold text-white">{c.author}</span>
+                                <span className="text-[10px] text-neutral-500">{c.time}</span>
+                              </div>
+                              <p className="text-neutral-300 text-[11px] leading-relaxed">{c.text}</p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Add Comment Input */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddComment(post.id);
+                            }
+                          }}
+                          placeholder={isId ? 'Tulis tanggapan atau analisis Anda...' : 'Write your comment or analysis...'}
+                          className="flex-1 bg-[#111726] border border-[#1e2a42] rounded-xl px-3 py-1.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#2962ff]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleAddComment(post.id)}
+                          className="px-3 py-1.5 rounded-xl bg-[#2962ff] hover:bg-[#1e54e4] text-white text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          {isId ? 'Kirim' : 'Post'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

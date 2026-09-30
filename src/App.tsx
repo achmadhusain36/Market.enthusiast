@@ -615,6 +615,11 @@ export default function App() {
           }
         }}
         onLogout={handleLogout}
+        notifications={notifications}
+        onMarkAllNotificationsRead={() =>
+          setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+        }
+        onClearNotifications={() => setNotifications([])}
       />
 
       {/* 2. Interactive Navigation Ribbon (Switch between Dashboard, Superchart, Screener, Heatmap, Calendar, Portfolio, Transactions, Community, Broker) */}
@@ -809,6 +814,10 @@ export default function App() {
                 onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
                 onOpenSearch={() => setIsSearchModalOpen(true)}
                 onNavigateToChart={() => setActiveNavTab('chart')}
+                onOpenDeposit={() => {
+                  setProfileInitialTab('payment');
+                  setIsPasscodeModalOpen(true);
+                }}
               />
             )}
 
@@ -884,6 +893,10 @@ export default function App() {
                       onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
                       selectedCurrency={userProfile.selectedCurrency}
                       language={userProfile.language || 'id'}
+                      alerts={alerts}
+                      onOpenAlertModal={() => setIsAlertModalOpen(true)}
+                      onNavigateToTab={(tab) => setActiveNavTab(tab as any)}
+                      onOpenSearch={() => setIsSearchModalOpen(true)}
                     />
                   </div>
                 </div>
@@ -898,7 +911,10 @@ export default function App() {
                   language={userProfile.language || 'id'}
                   onSelectStock={handleSelectStock}
                   onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
-                  onOpenProfile={() => setIsPasscodeModalOpen(true)}
+                  onOpenProfile={() => {
+                    setProfileInitialTab('payment');
+                    setIsPasscodeModalOpen(true);
+                  }}
                   isLiveSyncing={isLiveSyncing}
                   isOpen={isBottomDockOpen}
                   onToggleOpen={() => setIsBottomDockOpen(!isBottomDockOpen)}

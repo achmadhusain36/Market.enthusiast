@@ -25,6 +25,7 @@ interface PortfolioPageProps {
   onOpenTrade: (stock: StockQuote, type: 'BUY' | 'SELL') => void;
   onOpenSearch: () => void;
   onNavigateToChart: () => void;
+  onOpenDeposit?: () => void;
 }
 
 export const PortfolioPage: React.FC<PortfolioPageProps> = ({
@@ -37,6 +38,7 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
   onOpenTrade,
   onOpenSearch,
   onNavigateToChart,
+  onOpenDeposit,
 }) => {
   const isId = language === 'id';
 
@@ -171,29 +173,51 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
         </div>
 
         {/* Card 3: Saldo Kas RDN USD */}
-        <div className="bg-[#0b0e17] border border-[#1b2336] rounded-2xl p-4 shadow-lg">
-          <span className="text-xs text-neutral-400 font-sans block mb-1">
-            {isId ? 'Saldo Kas USD Tersedia' : 'Available Cash Balance (USD)'}
-          </span>
-          <div className="text-xl sm:text-2xl font-bold text-cyan-400 tracking-tight">
-            ${userProfile.cashBalanceUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+        <div className="bg-[#0b0e17] border border-[#1b2336] rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <span className="text-xs text-neutral-400 font-sans block mb-1">
+              {isId ? 'Saldo Kas USD Tersedia' : 'Available Cash Balance (USD)'}
+            </span>
+            <div className="text-xl sm:text-2xl font-bold text-cyan-400 tracking-tight">
+              ${userProfile.cashBalanceUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </div>
+            <div className="text-[11px] text-neutral-400 font-sans mt-1">
+              {isId ? 'Siap digunakan beli saham Wall Street' : 'Ready for US market orders'}
+            </div>
           </div>
-          <div className="text-[11px] text-neutral-400 font-sans mt-1">
-            {isId ? 'Siap digunakan beli saham Wall Street' : 'Ready for US market orders'}
-          </div>
+          {onOpenDeposit && (
+            <button
+              onClick={onOpenDeposit}
+              className="mt-3 text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 cursor-pointer bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-800/40 px-3 py-1.5 rounded-xl transition-all w-fit"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{isId ? 'Top Up Saldo USD' : 'Deposit USD'}</span>
+            </button>
+          )}
         </div>
 
         {/* Card 4: Saldo Kas RDN IDR */}
-        <div className="bg-[#0b0e17] border border-[#1b2336] rounded-2xl p-4 shadow-lg">
-          <span className="text-xs text-neutral-400 font-sans block mb-1">
-            {isId ? 'Saldo Kas IDR Tersedia' : 'Available Cash Balance (IDR)'}
-          </span>
-          <div className="text-xl sm:text-2xl font-bold text-amber-400 tracking-tight">
-            Rp {userProfile.cashBalanceIDR.toLocaleString('id-ID')}
+        <div className="bg-[#0b0e17] border border-[#1b2336] rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <span className="text-xs text-neutral-400 font-sans block mb-1">
+              {isId ? 'Saldo Kas IDR Tersedia' : 'Available Cash Balance (IDR)'}
+            </span>
+            <div className="text-xl sm:text-2xl font-bold text-amber-400 tracking-tight">
+              Rp {userProfile.cashBalanceIDR.toLocaleString('id-ID')}
+            </div>
+            <div className="text-[11px] text-neutral-400 font-sans mt-1">
+              {isId ? 'Siap digunakan beli saham IHSG' : 'Ready for IDX market orders'}
+            </div>
           </div>
-          <div className="text-[11px] text-neutral-400 font-sans mt-1">
-            {isId ? 'Siap digunakan beli saham IHSG' : 'Ready for IDX market orders'}
-          </div>
+          {onOpenDeposit && (
+            <button
+              onClick={onOpenDeposit}
+              className="mt-3 text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1.5 cursor-pointer bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/40 px-3 py-1.5 rounded-xl transition-all w-fit"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{isId ? 'Top Up Saldo IDR' : 'Deposit IDR'}</span>
+            </button>
+          )}
         </div>
       </div>
 

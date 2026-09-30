@@ -15,6 +15,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        window.addEventListener('keydown', function(e) {
+          if (e.key === 'F12' || e.keyCode === 123 ||
+              ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+              ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U'))) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        }, true);
+      })();
+    </script>
   </head>
   <body class="bg-[#000000] text-white antialiased selection:bg-emerald-500/30 selection:text-emerald-300">
     <div id="root"></div>

@@ -79,7 +79,210 @@ interface StockChartProps {
   indicators?: TechnicalIndicator[];
   onToggleIndicator?: (id: string) => void;
   onRemoveIndicator?: (id: string) => void;
+  onSelectStock?: (symbol: string) => void;
 }
+
+interface MiniChartPaneProps {
+  symbol: string;
+  name: string;
+  market: 'IDX' | 'NASDAQ' | 'NYSE' | 'GLOBAL';
+  currency: 'IDR' | 'USD';
+  price: number;
+  change: number;
+  changePercent: number;
+  timeframe: string;
+  candles: CandleData[];
+  onMaximize: () => void;
+  onTrade?: () => void;
+  isId: boolean;
+}
+
+const MiniChartPane: React.FC<MiniChartPaneProps> = ({
+  symbol,
+  name,
+  market,
+  currency,
+  price,
+  change,
+  changePercent,
+  timeframe,
+  candles,
+  onMaximize,
+  onTrade,
+  isId,
+}) => {
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const isPos = changePercent >= 0;
+
+  let min = Infinity;
+  let max = -Infinity;
+  candles.forEach((c) => {
+    if (c.low < min) min = c.low;
+    if (c.high > max) max = c.high;
+  });
+  const range = max - min || 1;
+  const padding = range * 0.08;
+  const adjMin = Math.max(0, min - padding);
+  const adjMax = max + padding;
+  const adjRange = adjMax - adjMin || 1;
+
+  const w = 480;
+  const h = 240;
+  const pTop = 15;
+  const pBottom = 25;
+  const pLeft = 15;
+  const pRight = 55;
+  const chartW = w - pLeft - pRight;
+  const chartH = h - pTop - pBottom;
+
+  const getX = (i: number) => pLeft + (i / Math.max(1, candles.length - 1)) * chartW;
+  const getY = (p: number) => pTop + (1 - (p - adjMin) / adjRange) * chartH;
+
+  const activeCandle =
+    hoverIdx !== null && candles[hoverIdx] ? candles[hoverIdx] : candles[candles.length - 1];
+
+  return (
+    <div className="bg-[#0b0e14] border border-[#1b2336] rounded-xl flex flex-col overflow-hidden relative group">
+      {/* Pane Top Header */}
+      <div className="px-3 py-1.5 bg-[#10141f] border-b border-[#1a2234] flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
+          <span className="font-extrabold text-white">{symbol}</span>
+          <span className="text-[10px] px-1 rounded bg-[#1c263c] text-neutral-300 font-mono">
+            {market}
+          </span>
+          <span className="text-[10px] px-1 rounded bg-[#1c263c] text-cyan-300 font-mono">
+            {timeframe}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="font-mono text-[11px] font-bold">
+            <span className="text-white">
+              {currency === 'IDR' ? 'Rp ' : '$'}
+              {price.toLocaleString()}
+            </span>
+            <span className={`ml-1.5 ${isPos ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {isPos ? '+' : ''}
+              {changePercent.toFixed(2)}%
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            {onTrade && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTrade();
+                }}
+                title={isId ? 'Order Saham' : 'Trade'}
+                className="px-1.5 py-0.5 rounded bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 text-[10px] font-bold border border-emerald-500/30 cursor-pointer"
+              >
+                Trade
+              </button>
+            )}
+            <button
+              onClick={onMaximize}
+              title={isId ? 'Fokus ke 1 Chart' : 'Maximize (1 Chart)'}
+              className="p-1 rounded bg-[#1a2336] hover:bg-[#25324d] text-neutral-300 hover:text-white cursor-pointer"
+            >
+              <Maximize2 className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* SVG Mini Canvas */}
+      <div
+        className="flex-1 relative bg-[#07090f] p-1 overflow-hidden min-h-[140px]"
+        onMouseLeave={() => setHoverIdx(null)}
+      >
+        <svg
+          viewBox={`0 0 ${w} ${h}`}
+          className="w-full h-full block cursor-crosshair"
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const relX = (e.clientX - rect.left) / rect.width;
+            const idx = Math.min(
+              candles.length - 1,
+              Math.max(0, Math.floor(relX * candles.length))
+            );
+            setHoverIdx(idx);
+          }}
+          onClick={onMaximize}
+        >
+          {/* Subtle Grid Lines */}
+          {[0.25, 0.5, 0.75].map((ratio) => (
+            <line
+              key={ratio}
+              x1={pLeft}
+              y1={pTop + ratio * chartH}
+              x2={pLeft + chartW}
+              y2={pTop + ratio * chartH}
+              stroke="#1b2336"
+              strokeDasharray="2 3"
+              strokeWidth="0.8"
+            />
+          ))}
+
+          {/* Candlesticks */}
+          {candles.map((c, i) => {
+            const x = getX(i);
+            const openY = getY(c.open);
+            const closeY = getY(c.close);
+            const highY = getY(c.high);
+            const lowY = getY(c.low);
+            const isGreen = c.close >= c.open;
+            const color = isGreen ? '#22ab94' : '#f23645';
+            const candleW = Math.max(1.8, (chartW / candles.length) * 0.7);
+
+            return (
+              <g key={i}>
+                <line x1={x} y1={highY} x2={x} y2={lowY} stroke={color} strokeWidth="1" />
+                <rect
+                  x={x - candleW / 2}
+                  y={Math.min(openY, closeY)}
+                  width={candleW}
+                  height={Math.max(1, Math.abs(closeY - openY))}
+                  fill={color}
+                />
+              </g>
+            );
+          })}
+
+          {/* Right Y-Axis Scale */}
+          <text
+            x={w - 8}
+            y={pTop + 10}
+            textAnchor="end"
+            fill="#787b86"
+            fontSize="9"
+            fontFamily="monospace"
+          >
+            {adjMax.toLocaleString()}
+          </text>
+          <text
+            x={w - 8}
+            y={pTop + chartH}
+            textAnchor="end"
+            fill="#787b86"
+            fontSize="9"
+            fontFamily="monospace"
+          >
+            {adjMin.toLocaleString()}
+          </text>
+        </svg>
+
+        {/* Hover info tooltip */}
+        {hoverIdx !== null && activeCandle && (
+          <div className="absolute top-2 left-2 bg-[#121622]/95 border border-[#20293d] rounded px-2 py-1 text-[10px] font-mono text-white pointer-events-none">
+            <span className="font-bold">{activeCandle.close.toLocaleString()}</span> •{' '}
+            {activeCandle.time}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export const StockChart: React.FC<StockChartProps> = ({
   stock,
@@ -95,6 +298,7 @@ export const StockChart: React.FC<StockChartProps> = ({
   indicators = [],
   onToggleIndicator,
   onRemoveIndicator,
+  onSelectStock,
 }) => {
   const t = TRANSLATIONS[language || 'en'];
   const isId = language === 'id';
@@ -361,6 +565,37 @@ export const StockChart: React.FC<StockChartProps> = ({
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
+
+  // Sample comparison candles for multi-chart layout views
+  const compositeCandles = useMemo(() => {
+    return displayCandles.map((c, i) => ({
+      ...c,
+      open: 6500 + Math.sin(i * 0.25) * 45,
+      high: 6500 + Math.sin(i * 0.25) * 45 + 18,
+      low: 6500 + Math.sin(i * 0.25) * 45 - 15,
+      close: 6500 + Math.sin(i * 0.25 + 0.1) * 48,
+    }));
+  }, [displayCandles]);
+
+  const nvdaCandles = useMemo(() => {
+    return displayCandles.map((c, i) => ({
+      ...c,
+      open: 135 + Math.cos(i * 0.3) * 6,
+      high: 135 + Math.cos(i * 0.3) * 6 + 2.5,
+      low: 135 + Math.cos(i * 0.3) * 6 - 2,
+      close: 135 + Math.cos(i * 0.3 + 0.15) * 6.5,
+    }));
+  }, [displayCandles]);
+
+  const bbcaCandles = useMemo(() => {
+    return displayCandles.map((c, i) => ({
+      ...c,
+      open: 10400 + Math.sin(i * 0.2) * 120,
+      high: 10400 + Math.sin(i * 0.2) * 120 + 50,
+      low: 10400 + Math.sin(i * 0.2) * 120 - 50,
+      close: 10400 + Math.sin(i * 0.2 + 0.1) * 130,
+    }));
+  }, [displayCandles]);
 
   const handleSnapshot = () => {
     navigator.clipboard?.writeText?.(window.location.href);
@@ -701,12 +936,13 @@ export const StockChart: React.FC<StockChartProps> = ({
           </button>
         </div>
 
-        {/* Chart Canvas & SVG Container */}
-        <div
-          ref={containerRef}
-          className="flex-1 relative bg-[#000000] select-none min-h-[380px] overflow-hidden"
-          onMouseLeave={handleMouseLeave}
-        >
+        {multiLayout === '1' ? (
+          /* Chart Canvas & SVG Container */
+          <div
+            ref={containerRef}
+            className="flex-1 relative bg-[#000000] select-none min-h-[380px] overflow-hidden"
+            onMouseLeave={handleMouseLeave}
+          >
           {/* Active Indicators Overlay Chips in Top Left */}
           <div className="absolute top-2 left-3 z-10 flex flex-wrap items-center gap-1.5 text-[11px] font-mono select-none">
             {indicators
@@ -1201,6 +1437,106 @@ export const StockChart: React.FC<StockChartProps> = ({
             </div>
           )}
         </div>
+        ) : multiLayout === '2-h' ? (
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2 bg-[#090b10] p-2 overflow-y-auto select-none min-h-[380px]">
+            <MiniChartPane
+              symbol={stock.symbol}
+              name={stock.name}
+              market={stock.market}
+              currency={stock.currency}
+              price={stock.price}
+              change={stock.change}
+              changePercent={stock.changePercent}
+              timeframe={timeframe}
+              candles={displayCandles}
+              onMaximize={() => setMultiLayout('1')}
+              onTrade={() => onOpenTrade(stock, 'BUY')}
+              isId={isId}
+            />
+            <MiniChartPane
+              symbol="COMPOSITE"
+              name="IDX Composite Index"
+              market="IDX"
+              currency="IDR"
+              price={6520.45}
+              change={29.15}
+              changePercent={0.45}
+              timeframe="1D"
+              candles={compositeCandles}
+              onMaximize={() => {
+                setMultiLayout('1');
+                onSelectStock?.('COMPOSITE');
+              }}
+              onTrade={() => onOpenTrade(stock, 'BUY')}
+              isId={isId}
+            />
+          </div>
+        ) : (
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-[#090b10] p-2 overflow-y-auto select-none min-h-[380px]">
+            <MiniChartPane
+              symbol={stock.symbol}
+              name={stock.name}
+              market={stock.market}
+              currency={stock.currency}
+              price={stock.price}
+              change={stock.change}
+              changePercent={stock.changePercent}
+              timeframe={timeframe}
+              candles={displayCandles}
+              onMaximize={() => setMultiLayout('1')}
+              onTrade={() => onOpenTrade(stock, 'BUY')}
+              isId={isId}
+            />
+            <MiniChartPane
+              symbol="COMPOSITE"
+              name="IDX Composite"
+              market="IDX"
+              currency="IDR"
+              price={6520.45}
+              change={29.15}
+              changePercent={0.45}
+              timeframe="1D"
+              candles={compositeCandles}
+              onMaximize={() => {
+                setMultiLayout('1');
+                onSelectStock?.('COMPOSITE');
+              }}
+              isId={isId}
+            />
+            <MiniChartPane
+              symbol="NVDA"
+              name="NVIDIA Corporation"
+              market="NASDAQ"
+              currency="USD"
+              price={138.25}
+              change={3.85}
+              changePercent={2.86}
+              timeframe="1D"
+              candles={nvdaCandles}
+              onMaximize={() => {
+                setMultiLayout('1');
+                onSelectStock?.('NVDA');
+              }}
+              isId={isId}
+            />
+            <MiniChartPane
+              symbol="BBCA"
+              name="Bank Central Asia"
+              market="IDX"
+              currency="IDR"
+              price={10450}
+              change={125}
+              changePercent={1.21}
+              timeframe="1D"
+              candles={bbcaCandles}
+              onMaximize={() => {
+                setMultiLayout('1');
+                onSelectStock?.('BBCA.JK');
+              }}
+              isId={isId}
+            />
+          </div>
+        )}
       </div>
 
       {/* 4. COMPARISON WITH BENCHMARK INDICES BAR */}
