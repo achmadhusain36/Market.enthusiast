@@ -22,6 +22,9 @@ import {
   Calendar,
   Camera,
   Sparkles,
+  Award,
+  HelpCircle,
+  Home,
 } from 'lucide-react';
 import { UserProfile, StockQuote, MarketIndex, CurrencyType, Language, AppNotification } from '../types';
 import { TRANSLATIONS } from '../utils/translations';
@@ -52,6 +55,8 @@ interface HeaderProps {
   notifications?: AppNotification[];
   onMarkAllNotificationsRead?: () => void;
   onClearNotifications?: () => void;
+  tradingMode?: 'REAL' | 'DEMO';
+  onToggleTradingMode?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -76,6 +81,8 @@ export const Header: React.FC<HeaderProps> = ({
   notifications = [],
   onMarkAllNotificationsRead = () => {},
   onClearNotifications = () => {},
+  tradingMode = 'REAL',
+  onToggleTradingMode = () => {},
 }) => {
   const t = TRANSLATIONS[userProfile.language || 'id'];
   const isId = userProfile.language === 'id';
@@ -305,7 +312,33 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{userProfile.language === 'en' ? 'Orders' : 'Riwayat'}</span>
             </button>
 
-            {/* 7. Komunitas & Ide Analisis */}
+            {/* 7. Wallet & Saldo */}
+            <button
+              onClick={() => onNavTabChange('wallet')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'wallet'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
+                  : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
+              }`}
+            >
+              <Wallet className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Wallet</span>
+            </button>
+
+            {/* 8. Analitik & Prestasi */}
+            <button
+              onClick={() => onNavTabChange('analytics')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                activeNavTab === 'analytics'
+                  ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
+                  : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
+              }`}
+            >
+              <Award className="w-3.5 h-3.5 text-amber-400" />
+              <span>{isId ? 'Analitik' : 'Analytics'}</span>
+            </button>
+
+            {/* 9. Komunitas & Ide Analisis */}
             <button
               onClick={() => onNavTabChange('community')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
@@ -317,22 +350,54 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{t.navCommunity}</span>
             </button>
 
-            {/* 8. Broker */}
+            {/* 10. Bantuan & FAQ */}
             <button
-              onClick={() => onNavTabChange('broker')}
+              onClick={() => onNavTabChange('help')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
-                activeNavTab === 'broker'
+                activeNavTab === 'help'
                   ? 'text-white bg-[#1e222d] font-bold border border-[#2b3344]'
                   : 'text-neutral-300 hover:text-white hover:bg-[#1e222d]/60'
               }`}
             >
-              <span>{t.navBrokers}</span>
+              <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{isId ? 'Bantuan' : 'Help'}</span>
+            </button>
+
+            {/* 11. Landing Page / Beranda */}
+            <button
+              onClick={() => onNavTabChange('landing')}
+              className={`px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-neutral-400 hover:text-white`}
+              title="Kembali ke Beranda"
+            >
+              <Home className="w-3.5 h-3.5 text-neutral-400" />
+              <span>{isId ? 'Beranda' : 'Landing'}</span>
             </button>
           </nav>
         </div>
 
-        {/* Right Actions: Language Switcher, Currency, Order, Upgrade, Profile Avatar */}
+        {/* Right Actions: Mode Switcher, Currency, Order, Upgrade, Profile */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 relative">
+          {/* Real vs Demo Account Mode Switcher */}
+          <button
+            onClick={onToggleTradingMode}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all cursor-pointer border ${
+              tradingMode === 'REAL'
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                : 'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/30 shadow-sm'
+            }`}
+            title={
+              tradingMode === 'REAL'
+                ? 'Akun Real RDN Aktif. Klik untuk beralih ke Mode Demo ($100K).'
+                : 'Mode Demo $100K Aktif. Klik untuk beralih ke Akun Real RDN.'
+            }
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                tradingMode === 'REAL' ? 'bg-emerald-400 animate-pulse' : 'bg-purple-400'
+              }`}
+            />
+            <span>{tradingMode === 'REAL' ? 'REAL' : 'DEMO $100K'}</span>
+          </button>
           {/* Notification Center Bell Icon */}
           <div className="relative">
             <button

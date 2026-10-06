@@ -20,6 +20,11 @@ import { EconomicCalendarPage } from './components/EconomicCalendarPage';
 import { PriceAlertModal } from './components/PriceAlertModal';
 import { IndicatorsModal } from './components/IndicatorsModal';
 import { FundamentalModal } from './components/FundamentalModal';
+import { LandingPage } from './components/LandingPage';
+import { OrderBook } from './components/OrderBook';
+import { WalletPage } from './components/WalletPage';
+import { HelpCenterPage } from './components/HelpCenterPage';
+import { TraderAnalyticsPage } from './components/TraderAnalyticsPage';
 import {
   INITIAL_USER_PROFILE,
   INITIAL_GLOBAL_INDICES,
@@ -42,6 +47,7 @@ import {
   TechnicalIndicator,
   AppNotification,
   PineScriptItem,
+  TradingAccountMode,
 } from './types';
 import { TRANSLATIONS } from './utils/translations';
 import { playAlertChime } from './utils/audioAlert';
@@ -56,6 +62,12 @@ import {
   LayoutDashboard,
   Grid,
   Calendar,
+  Wallet,
+  Award,
+  HelpCircle,
+  Home,
+  Layers,
+  ArrowUpDown,
 } from 'lucide-react';
 
 export default function App() {
@@ -63,6 +75,21 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('market_enthusiast_auth_v1') === 'true';
   });
+
+  // Auth & Landing View States
+  const [authView, setAuthView] = useState<'LANDING' | 'AUTH'>('LANDING');
+  const [loginInitialMode, setLoginInitialMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
+
+  // Real vs Demo Trading Mode
+  const [tradingMode, setTradingMode] = useState<TradingAccountMode>(() => {
+    return (localStorage.getItem('market_trading_mode_v1') as TradingAccountMode) || 'REAL';
+  });
+
+  const [demoBalanceUSD, setDemoBalanceUSD] = useState<number>(100000);
+  const [demoBalanceIDR, setDemoBalanceIDR] = useState<number>(1500000000);
+
+  // Active right tab on Superchart: 'watchlist' | 'orderbook'
+  const [chartRightTab, setChartRightTab] = useState<'watchlist' | 'orderbook'>('watchlist');
 
   const handleLoginSuccess = (email: string) => {
     setIsAuthenticated(true);
@@ -76,6 +103,7 @@ export default function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem('market_enthusiast_auth_v1');
+    setAuthView('LANDING');
   };
 
   // 1. Persistent User Profile & Language & Balance (Achmad Husain)
@@ -500,21 +528,37 @@ export default function App() {
       setTransactions((prev) => [newTransaction, ...prev]);
 
       // 2. Adjust User Cash Balance
-      setUserProfile((prev) => {
+      if (tradingMode === 'DEMO') {
         if (trade.stock.currency === 'USD') {
-          const nextUSD =
+          setDemoBalanceUSD((prev) =>
             trade.type === 'BUY'
-              ? Math.max(0, prev.cashBalanceUSD - trade.total)
-              : prev.cashBalanceUSD + trade.total;
-          return { ...prev, cashBalanceUSD: Number(nextUSD.toFixed(2)) };
+              ? Math.max(0, prev - trade.total)
+              : prev + trade.total
+          );
         } else {
-          const nextIDR =
+          setDemoBalanceIDR((prev) =>
             trade.type === 'BUY'
-              ? Math.max(0, prev.cashBalanceIDR - trade.total)
-              : prev.cashBalanceIDR + trade.total;
-          return { ...prev, cashBalanceIDR: Math.round(nextIDR) };
+              ? Math.max(0, prev - trade.total)
+              : prev + trade.total
+          );
         }
-      });
+      } else {
+        setUserProfile((prev) => {
+          if (trade.stock.currency === 'USD') {
+            const nextUSD =
+              trade.type === 'BUY'
+                ? Math.max(0, prev.cashBalanceUSD - trade.total)
+                : prev.cashBalanceUSD + trade.total;
+            return { ...prev, cashBalanceUSD: Number(nextUSD.toFixed(2)) };
+          } else {
+            const nextIDR =
+              trade.type === 'BUY'
+                ? Math.max(0, prev.cashBalanceIDR - trade.total)
+                : prev.cashBalanceIDR + trade.total;
+            return { ...prev, cashBalanceIDR: Math.round(nextIDR) };
+          }
+        });
+      }
 
       // 3. Update Portfolio Holdings
       setHoldings((prev) => {
@@ -564,8 +608,55 @@ export default function App() {
         }
       });
     },
-    [userProfile.language]
+    [userProfile.language, tradingMode]
   );
+
+  const handleToggleTradingMode = useCallback(() => {
+    setTradingMode((prev) => {
+      const next = prev === 'REAL' ? 'DEMO' : 'REAL';
+      localStorage.setItem('market_trading_mode_v1', next);
+      setNotifications((n) => [
+        {
+          id: `notif-${Date.now()}`,
+          title: next === 'DEMO' ? 'MODE DEMO AKTIF' : 'MODE REAL AKTIF',
+          message:
+            next === 'DEMO'
+              ? 'Anda beralih ke Akun Demo ($100,000 USD virtual). Uji coba strategi tanpa risiko modal.'
+              : 'Anda beralih ke Akun Real (RDN BCA). Transaksi akan menggunakan saldo riil.',
+          time: 'Baru saja',
+          type: 'SYSTEM',
+          read: false,
+        },
+        ...n,
+      ]);
+      return next;
+    });
+  }, []);
+
+  const handleUpdateBalance = useCallback((idrChange: number, usdChange: number) => {
+    if (tradingMode === 'DEMO') {
+      setDemoBalanceIDR((prev) => Math.max(0, prev + idrChange));
+      setDemoBalanceUSD((prev) => Math.max(0, prev + usdChange));
+    } else {
+      setUserProfile((prev) => ({
+        ...prev,
+        cashBalanceIDR: Math.max(0, prev.cashBalanceIDR + idrChange),
+        cashBalanceUSD: Math.max(0, prev.cashBalanceUSD + usdChange),
+      }));
+    }
+  }, [tradingMode]);
+
+  const effectiveProfile: UserProfile = useMemo(() => {
+    if (tradingMode === 'DEMO') {
+      return {
+        ...userProfile,
+        cashBalanceUSD: demoBalanceUSD,
+        cashBalanceIDR: demoBalanceIDR,
+        accountNumber: 'DEMO-VIRTUAL-100K',
+      };
+    }
+    return userProfile;
+  }, [userProfile, tradingMode, demoBalanceUSD, demoBalanceIDR]);
 
   // Filtered stocks based on search query
   const filteredStocks = useMemo(() => {
@@ -579,7 +670,40 @@ export default function App() {
   const isId = userProfile.language === 'id';
 
   if (!isAuthenticated) {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+    if (authView === 'AUTH') {
+      return (
+        <LoginPage
+          onLoginSuccess={handleLoginSuccess}
+          onBackToLanding={() => setAuthView('LANDING')}
+          initialMode={loginInitialMode}
+        />
+      );
+    }
+    return (
+      <LandingPage
+        stocks={stocks}
+        indices={indices}
+        onEnterTerminal={() => {
+          setIsAuthenticated(true);
+          localStorage.setItem('market_enthusiast_auth_v1', 'true');
+        }}
+        onEnterDemo={() => {
+          setTradingMode('DEMO');
+          setIsAuthenticated(true);
+          localStorage.setItem('market_enthusiast_auth_v1', 'true');
+        }}
+        onOpenLogin={() => {
+          setLoginInitialMode('LOGIN');
+          setAuthView('AUTH');
+        }}
+        onOpenRegister={() => {
+          setLoginInitialMode('REGISTER');
+          setAuthView('AUTH');
+        }}
+        language={userProfile.language}
+        onSelectLanguage={handleSelectLanguage}
+      />
+    );
   }
 
   return (
@@ -711,6 +835,30 @@ export default function App() {
           </button>
 
           <button
+            onClick={() => setActiveNavTab('wallet')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeNavTab === 'wallet'
+                ? 'bg-[#182338] text-white border border-[#27385a] shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-[#111111]'
+            }`}
+          >
+            <Wallet className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{isId ? 'Dompet' : 'Wallet'}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('analytics')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeNavTab === 'analytics'
+                ? 'bg-[#182338] text-white border border-[#27385a] shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-[#111111]'
+            }`}
+          >
+            <Award className="w-3.5 h-3.5 text-amber-400" />
+            <span>{isId ? 'Analitik' : 'Analytics'}</span>
+          </button>
+
+          <button
             onClick={() => setActiveNavTab('community')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeNavTab === 'community'
@@ -720,6 +868,18 @@ export default function App() {
           >
             <MessageSquare className="w-3.5 h-3.5 text-purple-400" />
             <span>{isId ? 'Ide Komunitas' : 'Community Ideas'}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('help')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeNavTab === 'help'
+                ? 'bg-[#182338] text-white border border-[#27385a] shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-[#111111]'
+            }`}
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{isId ? 'Bantuan & FAQ' : 'Help & FAQ'}</span>
           </button>
 
           <button
@@ -735,8 +895,29 @@ export default function App() {
           </button>
         </div>
 
-        {/* Quick Search Launch Button */}
+        {/* Quick Search & Account Mode Switcher */}
         <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleToggleTradingMode}
+            className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+              tradingMode === 'DEMO'
+                ? 'bg-amber-500/15 text-amber-400 border-amber-500/40 hover:bg-amber-500/25'
+                : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/25'
+            }`}
+            title={
+              isId
+                ? 'Klik untuk beralih antara Akun Riil (RDN BCA) dan Akun Demo ($100,000 USD virtual)'
+                : 'Click to switch between Real Account (RDN BCA) and Demo Paper Trading ($100,000 USD virtual)'
+            }
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                tradingMode === 'DEMO' ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'
+              }`}
+            />
+            <span>{tradingMode === 'DEMO' ? 'DEMO ($100K)' : 'REAL (RDN)'}</span>
+          </button>
+
           <button
             onClick={() => setIsSearchModalOpen(true)}
             className="px-3 py-1 rounded-xl bg-[#141a27] hover:bg-[#1c2438] text-cyan-300 text-xs font-semibold flex items-center gap-1.5 border border-[#212b40] transition-colors cursor-pointer"
@@ -834,6 +1015,31 @@ export default function App() {
               />
             )}
 
+            {activeNavTab === 'wallet' && (
+              <WalletPage
+                userProfile={effectiveProfile}
+                selectedCurrency={userProfile.selectedCurrency}
+                language={userProfile.language}
+                onUpdateBalance={handleUpdateBalance}
+                onOpenPinModal={(onSuccess) => {
+                  setIsPasscodeModalOpen(true);
+                }}
+              />
+            )}
+
+            {activeNavTab === 'analytics' && (
+              <TraderAnalyticsPage
+                userProfile={effectiveProfile}
+                transactions={transactions}
+                holdings={holdings}
+                language={userProfile.language}
+              />
+            )}
+
+            {activeNavTab === 'help' && (
+              <HelpCenterPage language={userProfile.language} />
+            )}
+
             {activeNavTab === 'community' && (
               <CommunityPage
                 language={userProfile.language}
@@ -854,7 +1060,7 @@ export default function App() {
 
             {activeNavTab === 'chart' && (
               <div className="flex-1 w-full flex flex-col p-2 sm:p-4 gap-4">
-                {/* Main Grid: Superchart on Left, Watchlist Drawer on Right */}
+                {/* Main Grid: Superchart on Left, Watchlist / Order Book Drawer on Right */}
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 sm:gap-4 flex-1">
                   {/* Left / Center: TradingView Superchart (8 cols on XL) */}
                   <div className="xl:col-span-8 flex flex-col">
@@ -883,21 +1089,61 @@ export default function App() {
                     />
                   </div>
 
-                  {/* Right: TradingView Watchlist & Market Insights Sidebar (4 cols on XL) */}
-                  <div className="xl:col-span-4 flex flex-col">
-                    <MarketWatchlist
-                      stocks={filteredStocks}
-                      indices={indices}
-                      activeSymbol={activeSymbol}
-                      onSelectStock={handleSelectStock}
-                      onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
-                      selectedCurrency={userProfile.selectedCurrency}
-                      language={userProfile.language || 'id'}
-                      alerts={alerts}
-                      onOpenAlertModal={() => setIsAlertModalOpen(true)}
-                      onNavigateToTab={(tab) => setActiveNavTab(tab as any)}
-                      onOpenSearch={() => setIsSearchModalOpen(true)}
-                    />
+                  {/* Right: TradingView Watchlist & Order Book L2 */}
+                  <div className="xl:col-span-4 flex flex-col space-y-2">
+                    {/* Right Tab Selector: Watchlist vs Order Book */}
+                    <div className="flex items-center bg-[#10141e] p-1 rounded-xl border border-[#1e2638] text-xs font-bold shrink-0">
+                      <button
+                        onClick={() => setChartRightTab('watchlist')}
+                        className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                          chartRightTab === 'watchlist'
+                            ? 'bg-[#1e293b] text-white shadow'
+                            : 'text-neutral-400 hover:text-white'
+                        }`}
+                      >
+                        <Layers className="w-3.5 h-3.5 text-blue-400" />
+                        <span>{isId ? 'Watchlist' : 'Watchlist'}</span>
+                      </button>
+                      <button
+                        onClick={() => setChartRightTab('orderbook')}
+                        className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                          chartRightTab === 'orderbook'
+                            ? 'bg-[#1e293b] text-white shadow'
+                            : 'text-neutral-400 hover:text-white'
+                        }`}
+                      >
+                        <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{isId ? 'Order Book L2' : 'Order Book L2'}</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      </button>
+                    </div>
+
+                    {chartRightTab === 'watchlist' ? (
+                      <MarketWatchlist
+                        stocks={filteredStocks}
+                        indices={indices}
+                        activeSymbol={activeSymbol}
+                        onSelectStock={handleSelectStock}
+                        onOpenTrade={(stock, type) => handleOpenTrade(stock, type)}
+                        selectedCurrency={userProfile.selectedCurrency}
+                        language={userProfile.language || 'id'}
+                        alerts={alerts}
+                        onOpenAlertModal={() => setIsAlertModalOpen(true)}
+                        onNavigateToTab={(tab) => setActiveNavTab(tab as any)}
+                        onOpenSearch={() => setIsSearchModalOpen(true)}
+                      />
+                    ) : (
+                      <OrderBook
+                        stock={activeStock}
+                        language={userProfile.language || 'id'}
+                        onSelectPrice={(price) => {
+                          handleOpenTrade(activeStock, 'BUY');
+                        }}
+                        onQuickTrade={(stock, type) => {
+                          handleOpenTrade(stock, type);
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -1007,8 +1253,9 @@ export default function App() {
         onClose={() => setTradeModalState((prev) => ({ ...prev, isOpen: false }))}
         stock={tradeModalState.stock}
         initialType={tradeModalState.initialType}
-        userProfile={userProfile}
+        userProfile={effectiveProfile}
         holdings={holdings}
+        tradingMode={tradingMode}
         onExecuteTrade={handleExecuteTrade}
       />
 

@@ -1,4 +1,5 @@
-export type MarketType = 'NASDAQ' | 'NYSE' | 'IDX' | 'GLOBAL';
+export type MarketType = 'NASDAQ' | 'NYSE' | 'IDX' | 'GLOBAL' | 'CRYPTO' | 'FOREX' | 'COMMODITY';
+export type AssetCategory = 'ALL' | 'STOCKS' | 'CRYPTO' | 'FOREX' | 'COMMODITY';
 export type CurrencyType = 'USD' | 'IDR';
 
 export interface StockQuote {
@@ -19,6 +20,7 @@ export interface StockQuote {
   lastUpdated: string;
   flashDirection?: 'up' | 'down' | null;
   sector: string;
+  category?: 'STOCKS' | 'CRYPTO' | 'FOREX' | 'COMMODITY';
 }
 
 export interface CandleData {
@@ -257,4 +259,48 @@ export interface AppNotification {
   type: 'ALERT' | 'ORDER' | 'SYSTEM' | 'ECONOMIC';
   read: boolean;
 }
+
+// Order Book Level (Bids & Asks L2)
+export interface OrderBookLevel {
+  price: number;
+  amount: number;
+  total: number;
+  depthPercent: number;
+}
+
+export interface OrderBookData {
+  bids: OrderBookLevel[];
+  asks: OrderBookLevel[];
+  spread: number;
+  spreadPercent: number;
+}
+
+// Trading Mode: Real Trading vs Paper/Demo Trading
+export type TradingAccountMode = 'REAL' | 'DEMO';
+
+// Wallet Transactions (Deposit & Withdraw)
+export interface WalletTransaction {
+  id: string;
+  type: 'DEPOSIT' | 'WITHDRAW';
+  amount: number;
+  currency: 'IDR' | 'USD' | 'USDT';
+  method: string;
+  timestamp: string;
+  status: 'SUCCESS' | 'PENDING' | 'FAILED';
+  txHash?: string;
+  accountDestination?: string;
+}
+
+// Trader Gamification & Analytics
+export interface TraderAchievement {
+  id: string;
+  title: string;
+  desc: string;
+  icon: string;
+  unlocked: boolean;
+  progress: number; // 0 to 100
+  unlockedAt?: string;
+  rewardPoints: number;
+}
+
 

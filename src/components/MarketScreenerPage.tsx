@@ -42,12 +42,12 @@ export const MarketScreenerPage: React.FC<MarketScreenerPageProps> = ({
 }) => {
   const isId = language === 'id';
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'IDX' | 'NASDAQ' | 'NYSE' | 'US' | 'COMPOSITE'>('ALL');
+  const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'IDX' | 'NASDAQ' | 'NYSE' | 'CRYPTO' | 'FOREX' | 'COMMODITY' | 'US' | 'COMPOSITE'>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<'ALL' | 'GAINERS' | 'LOSERS' | 'ACTIVE' | 'MEGA_CAP'>('ALL');
   const [sortBy, setSortBy] = useState<'changePercent' | 'price' | 'volume' | 'symbol'>('changePercent');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  const [favorites, setFavorites] = useState<string[]>(['BBCA.JK', 'NVDA', 'COMPOSITE']);
+  const [favorites, setFavorites] = useState<string[]>(['BBCA.JK', 'NVDA', 'COMPOSITE', 'BTC/USD']);
 
   const toggleFavorite = (symbol: string) => {
     setFavorites((prev) =>
@@ -66,6 +66,12 @@ export const MarketScreenerPage: React.FC<MarketScreenerPageProps> = ({
       list = list.filter((s) => s.market === 'NASDAQ');
     } else if (selectedMarket === 'NYSE') {
       list = list.filter((s) => s.market === 'NYSE');
+    } else if (selectedMarket === 'CRYPTO') {
+      list = list.filter((s) => s.market === 'CRYPTO' || s.category === 'CRYPTO');
+    } else if (selectedMarket === 'FOREX') {
+      list = list.filter((s) => s.market === 'FOREX' || s.category === 'FOREX');
+    } else if (selectedMarket === 'COMMODITY') {
+      list = list.filter((s) => s.market === 'COMMODITY' || s.category === 'COMMODITY');
     } else if (selectedMarket === 'US') {
       list = list.filter((s) => s.market === 'NASDAQ' || s.market === 'NYSE');
     } else if (selectedMarket === 'COMPOSITE') {
@@ -277,6 +283,39 @@ export const MarketScreenerPage: React.FC<MarketScreenerPageProps> = ({
             >
               <MarketLogo market="NYSE" size="xs" />
               <span>NYSE</span>
+            </button>
+            <button
+              onClick={() => setSelectedMarket('CRYPTO')}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs flex items-center gap-1.5 ${
+                selectedMarket === 'CRYPTO'
+                  ? 'bg-[#2962ff] text-white'
+                  : 'bg-[#141b2a] text-neutral-400 hover:text-white hover:bg-[#1a2336]'
+              }`}
+            >
+              <MarketLogo market="CRYPTO" size="xs" />
+              <span>Kripto</span>
+            </button>
+            <button
+              onClick={() => setSelectedMarket('FOREX')}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs flex items-center gap-1.5 ${
+                selectedMarket === 'FOREX'
+                  ? 'bg-[#2962ff] text-white'
+                  : 'bg-[#141b2a] text-neutral-400 hover:text-white hover:bg-[#1a2336]'
+              }`}
+            >
+              <MarketLogo market="FOREX" size="xs" />
+              <span>Forex</span>
+            </button>
+            <button
+              onClick={() => setSelectedMarket('COMMODITY')}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer text-xs flex items-center gap-1.5 ${
+                selectedMarket === 'COMMODITY'
+                  ? 'bg-[#2962ff] text-white'
+                  : 'bg-[#141b2a] text-neutral-400 hover:text-white hover:bg-[#1a2336]'
+              }`}
+            >
+              <MarketLogo market="COMMODITY" size="xs" />
+              <span>Komoditas</span>
             </button>
           </div>
 

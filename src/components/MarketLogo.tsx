@@ -138,6 +138,72 @@ export const MarketLogo: React.FC<MarketLogoProps> = ({
     );
   }
 
+  if (normalized === 'CRYPTO') {
+    return (
+      <div
+        className={`inline-flex items-center gap-1.5 rounded-md font-bold tracking-tight select-none ${
+          showLabel ? `bg-[#181105] border border-amber-500/30 text-white ${dim.px}` : ''
+        } ${className}`}
+        title="Cryptocurrency Market"
+      >
+        <svg viewBox="0 0 24 24" className={`${dim.box} shrink-0`} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="5" fill="#140D04" />
+          <circle cx="12" cy="12" r="7.5" fill="#F7931A" />
+          <path d="M12.5 7V8.2M14.5 7V8.2M9.5 9.2H13.8C14.5 9.2 15.1 9.7 15.1 10.4C15.1 11.1 14.5 11.6 13.8 11.6H12.5M12.5 11.6H14.2C15 11.6 15.6 12.2 15.6 13C15.6 13.8 15 14.4 14.2 14.4H9.5M11.5 14.4V16.5M13.5 14.4V16.5" stroke="#FFFFFF" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+        {showLabel && (
+          <div className="flex items-center gap-1">
+            <span className={`font-black tracking-wider text-amber-400 ${dim.text}`}>CRYPTO</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (normalized === 'FOREX') {
+    return (
+      <div
+        className={`inline-flex items-center gap-1.5 rounded-md font-bold tracking-tight select-none ${
+          showLabel ? `bg-[#081711] border border-emerald-500/30 text-white ${dim.px}` : ''
+        } ${className}`}
+        title="Foreign Exchange (Forex)"
+      >
+        <svg viewBox="0 0 24 24" className={`${dim.box} shrink-0`} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="5" fill="#04120C" />
+          <path d="M7 8L17 8M17 8L13 4M17 8L13 12M17 16L7 16M7 16L11 12M7 16L11 20" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        {showLabel && (
+          <div className="flex items-center gap-1">
+            <span className={`font-black tracking-wider text-emerald-400 ${dim.text}`}>FOREX</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (normalized === 'COMMODITY') {
+    return (
+      <div
+        className={`inline-flex items-center gap-1.5 rounded-md font-bold tracking-tight select-none ${
+          showLabel ? `bg-[#1a1505] border border-yellow-500/30 text-white ${dim.px}` : ''
+        } ${className}`}
+        title="Commodities Market (Gold, Oil, Metals)"
+      >
+        <svg viewBox="0 0 24 24" className={`${dim.box} shrink-0`} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="5" fill="#140F03" />
+          <path d="M5 16L8 8L19 8L16 16Z" fill="#EAB308" />
+          <path d="M8 8L11 5L22 5L19 8Z" fill="#FACC15" />
+          <path d="M19 8L22 5L19 13L16 16Z" fill="#CA8A04" />
+        </svg>
+        {showLabel && (
+          <div className="flex items-center gap-1">
+            <span className={`font-black tracking-wider text-yellow-400 ${dim.text}`}>COMMODITY</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // Fallback: GLOBAL / INDEX / S&P
   return (
     <div
