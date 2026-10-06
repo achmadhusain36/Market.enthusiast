@@ -111,12 +111,12 @@ export const PasscodeModal: React.FC<PasscodeModalProps> = ({
       tabIndex={0}
     >
       <div
-        className={`bg-[#0e121a] border border-[#212738] rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col transition-transform ${
+        className={`liquid-glass-accent bg-[#0c121e]/90 border border-white/15 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col backdrop-blur-2xl transition-transform ${
           isShaking ? 'translate-x-1 animate-bounce' : ''
         }`}
       >
         {/* Top Header */}
-        <div className="px-5 py-4 border-b border-[#1e2434] flex items-center justify-between bg-[#121722]">
+        <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-black/40 backdrop-blur-md">
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
               actionType === 'trade'

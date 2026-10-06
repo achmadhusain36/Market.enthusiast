@@ -277,10 +277,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-[#0b0e17] border border-[#1e2638] rounded-3xl w-full max-w-2xl shadow-2xl shadow-blue-950/40 overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-200">
+      <div className="liquid-glass-accent bg-[#090e1b]/90 border border-white/15 rounded-3xl w-full max-w-2xl shadow-2xl shadow-blue-950/40 overflow-hidden flex flex-col max-h-[92vh] backdrop-blur-2xl">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-[#1b2234] flex items-center justify-between bg-[#0e1320]">
+        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-black/40 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <div
               onClick={() => {

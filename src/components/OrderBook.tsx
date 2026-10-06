@@ -78,9 +78,9 @@ export const OrderBook: React.FC<OrderBookProps> = ({
   };
 
   return (
-    <div className="bg-[#080c14] border border-[#1b2336] rounded-2xl flex flex-col overflow-hidden shadow-xl select-none text-xs font-mono">
+    <div className="liquid-glass-card bg-[#070b12]/85 border border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-2xl select-none text-xs font-mono backdrop-blur-xl transition-all duration-300">
       {/* 1. Header Bar */}
-      <div className="p-3 border-b border-[#182133] bg-[#0c111c] flex items-center justify-between">
+      <div className="p-3 border-b border-white/10 bg-black/40 backdrop-blur-md flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-cyan-400" />
           <span className="font-bold text-white text-xs font-sans">

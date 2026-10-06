@@ -119,12 +119,12 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
   return (
     <div
       id="tradingview-right-panel"
-      className="flex h-full bg-[#000000] border border-[#1c1f26] rounded-none sm:rounded-xl overflow-hidden shadow-2xl relative"
+      className="flex h-full liquid-glass-card bg-[#070b12]/80 border border-white/10 rounded-none sm:rounded-xl overflow-hidden shadow-2xl relative backdrop-blur-xl transition-all duration-300"
     >
       {/* 1. Main Content Column */}
-      <div className="flex-1 flex flex-col min-w-0 border-r border-[#1c1f26] overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 border-r border-white/10 overflow-y-auto">
         {/* Watchlist Header */}
-        <div className="px-3 py-2.5 border-b border-[#1c1f26] flex items-center justify-between bg-[#000000] relative">
+        <div className="px-3 py-2.5 border-b border-white/10 flex items-center justify-between bg-black/40 backdrop-blur-md relative">
           <div
             onClick={() => setActiveRightTab('watchlist')}
             className="flex items-center gap-1.5 cursor-pointer text-white font-bold text-xs hover:text-neutral-200"
@@ -657,7 +657,7 @@ export const MarketWatchlist: React.FC<MarketWatchlistProps> = ({
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-[#121622]">
                 <span>{isId ? 'Sandi PIN Pengaturan & Saldo' : 'Settings & Cash PIN'}</span>
-                <span className="font-mono font-bold text-amber-400">708951</span>
+                <span className="font-mono font-bold text-amber-400 tracking-widest">••••••</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-[#121622]">
                 <span>{isId ? 'Order Beli & Jual Saham' : 'Execute Buy / Sell'}</span>

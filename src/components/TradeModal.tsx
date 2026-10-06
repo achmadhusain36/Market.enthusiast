@@ -137,10 +137,10 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   const isIDX = stock.market === 'IDX';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#0b0f19] border border-[#1e283d] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200">
+      <div className="liquid-glass-accent bg-[#0a0f1b]/90 border border-white/15 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh] backdrop-blur-2xl">
         {/* Header */}
-        <div className="px-5 py-3.5 border-b border-[#182133] flex items-center justify-between bg-[#0e1422] shrink-0">
+        <div className="px-5 py-3.5 border-b border-white/10 flex items-center justify-between bg-black/40 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#162033] border border-[#273450] flex items-center justify-center font-bold text-white text-xs">
               {stock.symbol.split('.')[0]}

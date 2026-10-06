@@ -52,10 +52,10 @@ export const HelpCenterPage: React.FC<HelpCenterPageProps> = ({ language = 'id' 
     {
       id: 'faq-1',
       category: 'account',
-      question: isId ? 'Berapa kode PIN keamanan default untuk akun saya?' : 'What is the default security PIN for my account?',
+      question: isId ? 'Bagaimana cara kerja PIN keamanan pada akun saya?' : 'How does the security PIN work on my account?',
       answer: isId
-        ? 'PIN keamanan otorisasi bawaan Anda adalah 708951. PIN ini wajib dimasukkan setiap kali Anda mengeksekusi order jual/beli, menarik dana kas, atau mengubah foto profil.'
-        : 'Your account authorization security PIN is 708951. It is required for trade executions, cash withdrawals, and profile changes.',
+        ? 'PIN keamanan 6-digit terenkripsi wajib dimasukkan setiap kali Anda mengeksekusi order jual/beli, menarik dana kas, atau mengubah foto profil. PIN ini bersifat rahasia dan terlindungi enkripsi.'
+        : 'An encrypted 6-digit security PIN is required for trade executions, cash withdrawals, and profile changes.',
     },
     {
       id: 'faq-2',
@@ -130,15 +130,15 @@ export const HelpCenterPage: React.FC<HelpCenterPageProps> = ({ language = 'id' 
       const lower = userText.toLowerCase();
       if (lower.includes('pin') || lower.includes('sandi') || lower.includes('password')) {
         reply = isId
-          ? 'Kode PIN keamanan bawaan Anda adalah 708951. Pastikan Anda tidak membagikan PIN ini kepada pihak lain.'
-          : 'Your account authorization security PIN is 708951.';
+          ? 'Kode PIN keamanan Anda terenkripsi demi privasi (••••••). Anda dapat melakukan verifikasi atau reset PIN melalui menu Pengaturan Keamanan.'
+          : 'Your security PIN is securely encrypted (••••••). You can manage it in Security Settings.';
       } else if (lower.includes('deposit') || lower.includes('isi saldo') || lower.includes('saldo')) {
         reply = isId
           ? 'Untuk deposit, buka tab "Wallet" di menu navigasi atas > klik "Isi Saldo (Deposit)" > pilih BCA Virtual Account atau QRIS.'
           : 'You can deposit funds via the Wallet page using Virtual Accounts, QRIS, or Web3 USDT.';
       } else if (lower.includes('withdraw') || lower.includes('tarik')) {
         reply = isId
-          ? 'Penarikan dana diproses instan ke rekening Bank BCA Anda atas nama Achmad Husain setelah verifikasi PIN 708951.'
+          ? 'Penarikan dana diproses instan ke rekening Bank BCA Anda atas nama Achmad Husain setelah verifikasi PIN keamanan.'
           : 'Withdrawals are processed instantly to your verified BCA account with PIN authorization.';
       } else if (lower.includes('demo') || lower.includes('paper')) {
         reply = isId

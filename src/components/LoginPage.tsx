@@ -134,7 +134,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      setSuccessMsg(`Tautan reset password telah dikirim ke ${email}. Gunakan PIN default 708951.`);
+      setSuccessMsg(`Tautan reset password telah dikirim ke ${email}. Silakan periksa inbox email Anda.`);
       setTimeout(() => {
         setAuthMode('LOGIN');
       }, 3000);
@@ -305,7 +305,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   />
                   <span>Ingat sesi saya</span>
                 </label>
-                <span className="text-[11px] text-neutral-500 font-mono">PIN: 708951</span>
+                <span className="text-[11px] text-neutral-500 font-mono">PIN: ••••••</span>
               </div>
 
               {errorMsg && (
@@ -479,7 +479,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   <Lock className="w-3.5 h-3.5" />
                   <span>PIN Keamanan Default Akun:</span>
                 </span>
-                <p className="font-mono text-white text-sm font-black">708951</p>
+                <p className="font-mono text-white text-sm font-black tracking-widest">••••••</p>
                 <p className="text-[11px] text-neutral-400">
                   PIN ini digunakan untuk membuka proteksi profil dan otorisasi transaksi.
                 </p>
@@ -532,7 +532,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
       {/* Footer */}
       <footer className="relative z-10 w-full py-4 text-center text-[11px] text-neutral-500 border-t border-[#141a24] bg-black/40">
-        © 2026 Market Terminal Multi-Asset Platform • Dilindungi Sandi PIN 708951 & TLS 1.3
+        © 2026 Market Terminal Multi-Asset Platform • Dilindungi Autentikasi PIN & TLS 1.3
       </footer>
     </div>
   );

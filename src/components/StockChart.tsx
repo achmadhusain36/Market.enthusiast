@@ -606,12 +606,12 @@ export const StockChart: React.FC<StockChartProps> = ({
   return (
     <div
       id="stock-chart-panel"
-      className={`bg-[#000000] border border-[#1c1f26] rounded-none sm:rounded-xl flex flex-col overflow-hidden shadow-2xl ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'relative'
+      className={`liquid-glass-card border border-white/10 rounded-none sm:rounded-xl flex flex-col overflow-hidden shadow-2xl backdrop-blur-xl transition-all duration-300 ${
+        isFullscreen ? 'fixed inset-0 z-50 rounded-none bg-black/95' : 'relative bg-[#070b12]/80'
       }`}
     >
       {/* 1. TOP HEADER TOOLBAR (TradingView Supercharts Navigation) */}
-      <div className="px-3 sm:px-4 py-2 border-b border-[#1c1f26] flex flex-wrap items-center justify-between gap-2.5 bg-[#080a0f]">
+      <div className="px-3 sm:px-4 py-2 border-b border-white/10 flex flex-wrap items-center justify-between gap-2.5 bg-black/40 backdrop-blur-md">
         {/* Left: Stock Profile, Price & Badges */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5">
           <StockCompanyLogo

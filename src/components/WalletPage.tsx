@@ -434,7 +434,7 @@ export const WalletPage: React.FC<WalletPageProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-neutral-400 font-mono">PIN Sandi: <strong>708951</strong></span>
+              <span className="text-[11px] text-neutral-400 font-mono">PIN Transaksi: <strong className="tracking-widest">••••••</strong></span>
             </div>
           </div>
         </div>
@@ -522,7 +522,7 @@ export const WalletPage: React.FC<WalletPageProps> = ({
               className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 cursor-pointer transition-all"
             >
               <Lock className="w-3.5 h-3.5" />
-              <span>{isId ? 'Konfirmasi Deposit dengan PIN (708951)' : 'Authorize Deposit with PIN (708951)'}</span>
+              <span>{isId ? 'Konfirmasi Deposit dengan PIN Keamanan' : 'Authorize Deposit with Security PIN'}</span>
             </button>
           </div>
 
@@ -701,7 +701,7 @@ export const WalletPage: React.FC<WalletPageProps> = ({
             className="w-full py-3 rounded-xl bg-[#2962ff] hover:bg-[#1a4fe0] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-950/40 cursor-pointer transition-all"
           >
             <Lock className="w-3.5 h-3.5" />
-            <span>{isId ? 'Otorisasi Penarikan Dana dengan PIN (708951)' : 'Authorize Withdrawal with PIN (708951)'}</span>
+            <span>{isId ? 'Otorisasi Penarikan Dana dengan PIN Keamanan' : 'Authorize Withdrawal with Security PIN'}</span>
           </button>
         </div>
       )}

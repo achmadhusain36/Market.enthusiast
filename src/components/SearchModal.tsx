@@ -89,10 +89,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const popularSymbols = ['COMPOSITE', 'BBCA.JK', 'NVDA', 'TSLA', 'AAPL', 'BMRI.JK'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 sm:pt-20 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="bg-[#0c1018] border border-[#212a3d] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 sm:pt-20 bg-black/80 backdrop-blur-xl animate-in fade-in duration-150">
+      <div className="liquid-glass-accent bg-[#090e1a]/90 border border-white/15 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] backdrop-blur-2xl">
         {/* Search Input Bar */}
-        <div className="p-4 border-b border-[#1b2336] flex items-center gap-3 bg-[#111624]">
+        <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-black/40 backdrop-blur-md">
           <Search className="w-5 h-5 text-[#2962ff] shrink-0" />
           <input
             ref={inputRef}

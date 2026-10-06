@@ -91,6 +91,19 @@ export default function App() {
   // Active right tab on Superchart: 'watchlist' | 'orderbook'
   const [chartRightTab, setChartRightTab] = useState<'watchlist' | 'orderbook'>('watchlist');
 
+  // Liquid Glass Mode state (Persisted in localStorage, default true)
+  const [isLiquidGlass, setIsLiquidGlass] = useState<boolean>(() => {
+    return localStorage.getItem('market_liquid_glass_v1') !== 'false';
+  });
+
+  const handleToggleLiquidGlass = useCallback(() => {
+    setIsLiquidGlass((prev) => {
+      const next = !prev;
+      localStorage.setItem('market_liquid_glass_v1', String(next));
+      return next;
+    });
+  }, []);
+
   const handleLoginSuccess = (email: string) => {
     setIsAuthenticated(true);
     localStorage.setItem('market_enthusiast_auth_v1', 'true');
@@ -744,10 +757,20 @@ export default function App() {
           setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
         }
         onClearNotifications={() => setNotifications([])}
+        tradingMode={tradingMode}
+        onToggleTradingMode={handleToggleTradingMode}
+        isLiquidGlass={isLiquidGlass}
+        onToggleLiquidGlass={handleToggleLiquidGlass}
       />
 
       {/* 2. Interactive Navigation Ribbon (Switch between Dashboard, Superchart, Screener, Heatmap, Calendar, Portfolio, Transactions, Community, Broker) */}
-      <div className="bg-[#000000] border-b border-[#1c1f26] px-3 sm:px-6 py-2 flex items-center justify-between gap-2 overflow-x-auto select-none">
+      <div
+        className={`px-3 sm:px-6 py-2 flex items-center justify-between gap-2 overflow-x-auto select-none transition-all ${
+          isLiquidGlass
+            ? 'liquid-glass-subtle border-b border-white/10 backdrop-blur-xl'
+            : 'bg-[#000000] border-b border-[#1c1f26]'
+        }`}
+      >
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setActiveNavTab('dashboard')}
@@ -918,6 +941,29 @@ export default function App() {
             <span>{tradingMode === 'DEMO' ? 'DEMO ($100K)' : 'REAL (RDN)'}</span>
           </button>
 
+          {/* Liquid Glass Switcher in Ribbon */}
+          <button
+            onClick={handleToggleLiquidGlass}
+            className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+              isLiquidGlass
+                ? 'bg-gradient-to-r from-cyan-500/25 via-blue-500/20 to-purple-500/25 border-cyan-400/50 text-cyan-200 shadow-md shadow-cyan-950/40 backdrop-blur-md'
+                : 'bg-[#182338] text-neutral-400 border-[#27385a] hover:text-white'
+            }`}
+            title={
+              isId
+                ? 'Aktifkan / Nonaktifkan Efek Liquid Glass (Kaca Transparan & Refraksi Modern)'
+                : 'Toggle Liquid Glass Effect (Frosted Glass & Specular Refraction)'
+            }
+          >
+            <span>💎</span>
+            <span className="hidden sm:inline">Glass</span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isLiquidGlass ? 'bg-cyan-400 animate-pulse' : 'bg-neutral-600'
+              }`}
+            />
+          </button>
+
           <button
             onClick={() => setIsSearchModalOpen(true)}
             className="px-3 py-1 rounded-xl bg-[#141a27] hover:bg-[#1c2438] text-cyan-300 text-xs font-semibold flex items-center gap-1.5 border border-[#212b40] transition-colors cursor-pointer"
@@ -928,8 +974,17 @@ export default function App() {
         </div>
       </div>
 
+      {/* Dynamic Liquid Glass Background Aurora Lights */}
+      {isLiquidGlass && (
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+          <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-600/15 blur-[120px] animate-liquid-blob-1" />
+          <div className="absolute top-1/3 -right-32 w-96 h-96 rounded-full bg-cyan-500/12 blur-[140px] animate-liquid-blob-2" />
+          <div className="absolute -bottom-32 left-1/3 w-96 h-96 rounded-full bg-emerald-500/10 blur-[130px] animate-liquid-blob-1" />
+        </div>
+      )}
+
       {/* 3. Dynamic Page View Router */}
-      <main className="flex-1 w-full flex flex-col relative overflow-x-hidden">
+      <main className="flex-1 w-full flex flex-col relative overflow-x-hidden z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeNavTab}

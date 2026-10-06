@@ -57,6 +57,8 @@ interface HeaderProps {
   onClearNotifications?: () => void;
   tradingMode?: 'REAL' | 'DEMO';
   onToggleTradingMode?: () => void;
+  isLiquidGlass?: boolean;
+  onToggleLiquidGlass?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -83,6 +85,8 @@ export const Header: React.FC<HeaderProps> = ({
   onClearNotifications = () => {},
   tradingMode = 'REAL',
   onToggleTradingMode = () => {},
+  isLiquidGlass = true,
+  onToggleLiquidGlass = () => {},
 }) => {
   const t = TRANSLATIONS[userProfile.language || 'id'];
   const isId = userProfile.language === 'id';
@@ -126,9 +130,20 @@ export const Header: React.FC<HeaderProps> = ({
       : formatCurrency(userProfile.cashBalanceIDR, 'IDR');
 
   return (
-    <header id="main-tradingview-header" className="border-b border-[#1c1f26] bg-[#000000] select-none sticky top-0 z-40">
+    <header
+      id="main-tradingview-header"
+      className={`border-b select-none sticky top-0 z-40 transition-all duration-300 ${
+        isLiquidGlass
+          ? 'liquid-glass border-white/10 shadow-xl shadow-black/50'
+          : 'border-[#1c1f26] bg-[#000000]'
+      }`}
+    >
       {/* 1. Global Live Ticker Bar (Top Strip) */}
-      <div className="border-b border-[#1c1f26] px-4 py-1 text-xs flex items-center justify-between overflow-x-auto gap-4 bg-[#000000]">
+      <div
+        className={`border-b px-4 py-1 text-xs flex items-center justify-between overflow-x-auto gap-4 transition-colors ${
+          isLiquidGlass ? 'border-white/10 bg-black/40 backdrop-blur-md' : 'border-[#1c1f26] bg-[#000000]'
+        }`}
+      >
         <div className="flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-1.5 font-medium text-neutral-300 text-[11px]">
             <span className="relative flex h-2 w-2">
@@ -461,6 +476,26 @@ export const Header: React.FC<HeaderProps> = ({
             title="Ganti tampilan mata uang USD / IDR"
           >
             {selectedCurrency === 'USD' ? '$ USD' : 'Rp IDR'}
+          </button>
+
+          {/* Liquid Glass Switcher Button */}
+          <button
+            id="btn-liquid-glass"
+            onClick={onToggleLiquidGlass}
+            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+              isLiquidGlass
+                ? 'bg-gradient-to-r from-cyan-500/25 via-blue-500/20 to-purple-500/25 border-cyan-400/50 text-cyan-200 shadow-md shadow-cyan-950/40 backdrop-blur-md'
+                : 'bg-[#1e222d] hover:bg-[#272b38] border-[#2a2e39] text-neutral-400 hover:text-white'
+            }`}
+            title="Aktifkan / Nonaktifkan Efek Liquid Glass (Kaca Transparan, Refraksi & Kilau Modern)"
+          >
+            <span className="text-sm">💎</span>
+            <span>Glass</span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isLiquidGlass ? 'bg-cyan-400 animate-pulse' : 'bg-neutral-600'
+              }`}
+            />
           </button>
 
           {/* Quick Trade / Order Saham Button */}

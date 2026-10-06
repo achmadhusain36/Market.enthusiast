@@ -701,7 +701,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <span>•</span>
               <span>TLS 1.3 Verified</span>
               <span>•</span>
-              <span>PIN 708951 Vault</span>
+              <span>Hardware-Secured PIN Vault</span>
             </div>
           </div>
         </div>
