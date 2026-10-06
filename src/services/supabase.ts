@@ -19,7 +19,7 @@ class MockSupabaseAuth {
       user_metadata: options?.data || { username: email.split('@')[0], role: 'user' },
       created_at: new Date().toISOString(),
     };
-    localStorage.setItem('nusa_auth_session', JSON.stringify({ user, token: 'mock-jwt-token' }));
+    localStorage.setItem('me_auth_session', JSON.stringify({ user, token: 'mock-jwt-token' }));
     return { data: { user, session: { access_token: 'mock-jwt-token' } }, error: null };
   }
 
@@ -31,14 +31,15 @@ class MockSupabaseAuth {
       user_metadata: {
         username: email.split('@')[0],
         role,
-        full_name: role === 'admin' ? 'Nusa Chief Administrator' : 'Achmad Husain',
+        full_name: role === 'admin' ? 'Market Administrator' : 'Market Enthusiast',
       },
     };
-    localStorage.setItem('nusa_auth_session', JSON.stringify({ user, token: 'mock-jwt-token' }));
+    localStorage.setItem('me_auth_session', JSON.stringify({ user, token: 'mock-jwt-token' }));
     return { data: { user, session: { access_token: 'mock-jwt-token' } }, error: null };
   }
 
   async signOut() {
+    localStorage.removeItem('me_auth_session');
     localStorage.removeItem('nusa_auth_session');
     return { error: null };
   }
@@ -48,7 +49,7 @@ class MockSupabaseAuth {
   }
 
   async getSession() {
-    const raw = localStorage.getItem('nusa_auth_session');
+    const raw = localStorage.getItem('me_auth_session') || localStorage.getItem('nusa_auth_session');
     if (raw) {
       try {
         const parsed = JSON.parse(raw);

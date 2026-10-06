@@ -18,10 +18,10 @@ export interface UserProfile {
 }
 
 const DEFAULT_USER: UserProfile = {
-  id: 'usr-nusa-default',
+  id: 'usr-me-default',
   email: 'emhaainunnajib36@gmail.com',
-  username: 'nusa_trader',
-  fullName: 'Achmad Husain',
+  username: 'market_trader',
+  fullName: 'Market Enthusiast',
   role: 'admin', // Gives user access to both App and Admin dashboards seamlessly!
   avatarUrl: '',
   is2FAEnabled: false,
@@ -44,18 +44,29 @@ function emitChange() {
   }
 }
 
+const STORAGE_PROFILE_KEY = 'me_user_profile_v3';
+const STORAGE_AUTH_KEY = 'me_auth_session_active';
+
 let storedUser: UserProfile = (() => {
-  const saved = localStorage.getItem('nusa_user_profile_v2');
+  const saved = localStorage.getItem(STORAGE_PROFILE_KEY) || localStorage.getItem('nusa_user_profile_v2');
   if (saved) {
     try {
-      return { ...DEFAULT_USER, ...JSON.parse(saved) };
+      const parsed = JSON.parse(saved);
+      // Clean up legacy display name if present
+      if (parsed.fullName === 'Achmad Husain') {
+        parsed.fullName = 'Market Enthusiast';
+      }
+      return { ...DEFAULT_USER, ...parsed };
     } catch (e) {}
   }
   return DEFAULT_USER;
 })();
 
 let isAuthenticated: boolean = (() => {
-  return localStorage.getItem('nusa_auth_session_active') === 'true';
+  return (
+    localStorage.getItem(STORAGE_AUTH_KEY) === 'true' ||
+    localStorage.getItem('nusa_auth_session_active') === 'true'
+  );
 })();
 
 export function useAuthStore() {
@@ -71,7 +82,7 @@ export function useAuthStore() {
 
   const persistUser = (newProfile: UserProfile) => {
     storedUser = newProfile;
-    localStorage.setItem('nusa_user_profile_v2', JSON.stringify(newProfile));
+    localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(newProfile));
     emitChange();
   };
 
@@ -85,11 +96,11 @@ export function useAuthStore() {
       ...storedUser,
       email,
       role,
-      fullName: isSpecialAdmin ? 'Nusa Chief Administrator' : storedUser.fullName,
+      fullName: isSpecialAdmin ? 'Market Administrator' : storedUser.fullName,
     };
     isAuthenticated = true;
-    localStorage.setItem('nusa_auth_session_active', 'true');
-    localStorage.setItem('nusa_user_profile_v2', JSON.stringify(storedUser));
+    localStorage.setItem(STORAGE_AUTH_KEY, 'true');
+    localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(storedUser));
     emitChange();
     return { success: true, user: storedUser };
   };
@@ -99,18 +110,19 @@ export function useAuthStore() {
       ...storedUser,
       email,
       username,
-      fullName: fullName || username,
+      fullName: fullName || username || 'Market Enthusiast',
       role: 'user',
     };
     isAuthenticated = true;
-    localStorage.setItem('nusa_auth_session_active', 'true');
-    localStorage.setItem('nusa_user_profile_v2', JSON.stringify(storedUser));
+    localStorage.setItem(STORAGE_AUTH_KEY, 'true');
+    localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(storedUser));
     emitChange();
     return { success: true, user: storedUser };
   };
 
   const logout = async () => {
     isAuthenticated = false;
+    localStorage.removeItem(STORAGE_AUTH_KEY);
     localStorage.removeItem('nusa_auth_session_active');
     emitChange();
   };

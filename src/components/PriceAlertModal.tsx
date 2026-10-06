@@ -11,8 +11,10 @@ import {
   Play,
   ArrowUpRight,
   ArrowDownRight,
+  Activity,
+  TrendingUp,
 } from 'lucide-react';
-import { PriceAlert, StockQuote, Language } from '../types';
+import { PriceAlert, StockQuote, Language, AlertCondition } from '../types';
 import { playAlertChime } from '../utils/audioAlert';
 
 interface PriceAlertModalProps {
@@ -36,7 +38,7 @@ export const PriceAlertModal: React.FC<PriceAlertModalProps> = ({
 }) => {
   const isId = language === 'id';
   const [targetPrice, setTargetPrice] = useState<string>(activeStock.price.toString());
-  const [condition, setCondition] = useState<'crossing' | 'greater_than' | 'less_than'>('crossing');
+  const [condition, setCondition] = useState<AlertCondition>('crossing');
   const [notifySound, setNotifySound] = useState(true);
   const [notifyBrowser, setNotifyBrowser] = useState(true);
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -133,21 +135,26 @@ export const PriceAlertModal: React.FC<PriceAlertModalProps> = ({
               {/* Condition */}
               <div>
                 <label className="block text-neutral-300 font-semibold mb-1.5">
-                  {isId ? 'Kondisi Pemicu' : 'Trigger Condition'}
+                  {isId ? 'Kondisi Pemicu Alert' : 'Trigger Condition'}
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { id: 'crossing', label: isId ? 'Menyilang' : 'Crossing' },
-                    { id: 'greater_than', label: isId ? 'Lebih Besar (>=)' : 'Greater Than (>=)' },
-                    { id: 'less_than', label: isId ? 'Lebih Kecil (<=)' : 'Less Than (<=)' },
+                    { id: 'crossing', label: isId ? 'Menyilang Target' : 'Crosses Price' },
+                    { id: 'greater_than', label: isId ? 'Harga >= Target' : 'Price >= Target' },
+                    { id: 'less_than', label: isId ? 'Harga <= Target' : 'Price <= Target' },
+                    { id: 'cross_above_ema50', label: isId ? 'Cross Di Atas EMA 50' : 'Cross Above EMA 50' },
+                    { id: 'cross_below_ema50', label: isId ? 'Cross Di Bawah EMA 50' : 'Cross Below EMA 50' },
+                    { id: 'rsi_overbought', label: isId ? 'RSI Overbought (>70)' : 'RSI Overbought (>70)' },
+                    { id: 'rsi_oversold', label: isId ? 'RSI Oversold (<30)' : 'RSI Oversold (<30)' },
+                    { id: 'supertrend_flip', label: isId ? 'Supertrend Flip' : 'Supertrend Flip' },
                   ].map((item) => (
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setCondition(item.id as typeof condition)}
-                      className={`p-2 rounded-xl text-center border text-xs font-semibold transition-all cursor-pointer ${
+                      onClick={() => setCondition(item.id as AlertCondition)}
+                      className={`p-2 rounded-xl text-center border text-[11px] font-semibold transition-all cursor-pointer ${
                         condition === item.id
-                          ? 'border-[#2962ff] bg-[#1e2a44] text-white'
+                          ? 'border-[#2962ff] bg-[#1e2a44] text-white shadow-sm'
                           : 'border-[#202738] bg-[#161a22] text-neutral-400 hover:text-white'
                       }`}
                     >

@@ -1,6 +1,6 @@
 {
   "name": "Market Enthusiast",
-  "description": "Modern global market trading terminal with real-time analytics, candlestick charts, portfolio balance management, MetaMask and debit deposit, and PIN-secured trading execution.",
+  "description": "Simulator trading dan terminal monitoring pasar multi-aset modern (Market Enthusiast) dengan analisis chart interaktif dan manajemen portofolio virtual.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

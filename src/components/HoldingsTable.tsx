@@ -37,7 +37,7 @@ export const HoldingsTable: React.FC<HoldingsTableProps> = ({
               {isId ? 'Portofolio Saham Dimiliki' : 'Current Stock Holdings'}
             </h3>
             <p className="text-xs text-neutral-400">
-              {isId ? 'Posisi aktif Achmad Husain di pasar ekuitas global' : 'Active equity positions in global and IDX markets'}
+              {isId ? 'Posisi aktif portofolio di pasar ekuitas global & domestik' : 'Active equity positions in global and IDX markets'}
             </p>
           </div>
         </div>

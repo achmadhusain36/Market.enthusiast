@@ -40,6 +40,10 @@ import {
   X,
   Type,
   Maximize,
+  Undo2,
+  Redo2,
+  ArrowRight,
+  GitBranch,
 } from 'lucide-react';
 import {
   StockQuote,
@@ -63,7 +67,18 @@ import {
   calculateRSI,
   calculateMACD,
   calculateHeikinAshi,
+  calculateSupertrend,
+  calculateVWAP,
+  calculateStochastic,
+  calculateATR,
+  calculateIchimoku,
+  calculateParabolicSAR,
+  calculateADX,
+  calculateCCI,
+  calculateOBV,
+  calculateWilliamsR,
 } from '../utils/technicalAnalysis';
+import { PineExecutionResult } from '../utils/pineScriptEngine';
 
 interface StockChartProps {
   stock: StockQuote;
@@ -80,6 +95,7 @@ interface StockChartProps {
   onToggleIndicator?: (id: string) => void;
   onRemoveIndicator?: (id: string) => void;
   onSelectStock?: (symbol: string) => void;
+  pineResult?: PineExecutionResult;
 }
 
 interface MiniChartPaneProps {
@@ -299,6 +315,7 @@ export const StockChart: React.FC<StockChartProps> = ({
   onToggleIndicator,
   onRemoveIndicator,
   onSelectStock,
+  pineResult,
 }) => {
   const t = TRANSLATIONS[language || 'en'];
   const isId = language === 'id';
@@ -319,6 +336,8 @@ export const StockChart: React.FC<StockChartProps> = ({
 
   // Drawing Tools State
   const [activeDrawingTool, setActiveDrawingTool] = useState<DrawingToolType>('crosshair');
+  const [drawingsHistory, setDrawingsHistory] = useState<DrawingObject[][]>([]);
+  const [drawingsRedoHistory, setDrawingsRedoHistory] = useState<DrawingObject[][]>([]);
   const [drawings, setDrawings] = useState<DrawingObject[]>([
     // Default example trend line & Long Risk/Reward box
     {
@@ -418,11 +437,30 @@ export const StockChart: React.FC<StockChartProps> = ({
     };
   }, [displayCandles]);
 
-  // Sub-panel check (e.g. RSI or MACD)
+  // Sub-panel check (RSI, MACD, Stochastic, ATR, ADX, CCI, Williams %R, OBV)
   const isRsiVisible = indicators.some((i) => i.type === 'RSI' && i.visible);
   const isMacdVisible = indicators.some((i) => i.type === 'MACD' && i.visible);
-  const hasSubPanel = isRsiVisible || isMacdVisible;
-  const subPanelHeight = hasSubPanel ? 90 : 0;
+  const isStochVisible = indicators.some((i) => i.type === 'STOCH' && i.visible);
+  const isAtrVisible = indicators.some((i) => i.type === 'ATR' && i.visible);
+  const isAdxVisible = indicators.some((i) => i.type === 'ADX' && i.visible);
+  const isCciVisible = indicators.some((i) => i.type === 'CCI' && i.visible);
+  const isWilliamsVisible = indicators.some((i) => i.type === 'WILLIAMS_R' && i.visible);
+  const isObvVisible = indicators.some((i) => i.type === 'OBV' && i.visible);
+
+  const activeSubPanels = [
+    isRsiVisible && 'RSI',
+    isMacdVisible && 'MACD',
+    isStochVisible && 'STOCH',
+    isAtrVisible && 'ATR',
+    isAdxVisible && 'ADX',
+    isCciVisible && 'CCI',
+    isWilliamsVisible && 'WILLIAMS_R',
+    isObvVisible && 'OBV',
+  ].filter(Boolean) as string[];
+
+  const hasSubPanel = activeSubPanels.length > 0;
+  const subPanelHeight = hasSubPanel ? Math.min(180, activeSubPanels.length * 75) : 0;
+  const singleSubHeight = hasSubPanel ? subPanelHeight / activeSubPanels.length : 0;
 
   const chartPadding = { top: 30, right: 90, bottom: 35 + subPanelHeight, left: 48 };
   const chartWidth = Math.max(100, dimensions.width - chartPadding.left - chartPadding.right);
@@ -435,6 +473,13 @@ export const StockChart: React.FC<StockChartProps> = ({
   };
 
   const getY = (price: number) => {
+    if (scaleMode === 'log') {
+      const logMin = Math.log(Math.max(0.0001, minPrice));
+      const logMax = Math.log(Math.max(0.0001, maxPrice));
+      const logVal = Math.log(Math.max(0.0001, price));
+      const norm = (logVal - logMin) / (logMax - logMin || 1);
+      return chartPadding.top + (1 - norm) * mainChartHeight;
+    }
     const norm = (price - minPrice) / priceRange;
     return chartPadding.top + (1 - norm) * mainChartHeight;
   };
@@ -455,6 +500,16 @@ export const StockChart: React.FC<StockChartProps> = ({
   const bb = useMemo(() => calculateBollingerBands(displayCandles, 20, 2), [displayCandles]);
   const rsiValues = useMemo(() => calculateRSI(displayCandles, 14), [displayCandles]);
   const macdData = useMemo(() => calculateMACD(displayCandles, 12, 26, 9), [displayCandles]);
+  const supertrend = useMemo(() => calculateSupertrend(displayCandles, 10, 3), [displayCandles]);
+  const vwap = useMemo(() => calculateVWAP(displayCandles), [displayCandles]);
+  const stoch = useMemo(() => calculateStochastic(displayCandles, 14, 3, 3), [displayCandles]);
+  const atr = useMemo(() => calculateATR(displayCandles, 14), [displayCandles]);
+  const ichimoku = useMemo(() => calculateIchimoku(displayCandles, 9, 26, 52), [displayCandles]);
+  const psar = useMemo(() => calculateParabolicSAR(displayCandles, 0.02, 0.2), [displayCandles]);
+  const adx = useMemo(() => calculateADX(displayCandles, 14), [displayCandles]);
+  const cci = useMemo(() => calculateCCI(displayCandles, 20), [displayCandles]);
+  const obv = useMemo(() => calculateOBV(displayCandles), [displayCandles]);
+  const williamsR = useMemo(() => calculateWilliamsR(displayCandles, 14), [displayCandles]);
 
   // Paths for area & line charts
   const { areaPathD, linePathD } = useMemo(() => {
@@ -502,6 +557,9 @@ export const StockChart: React.FC<StockChartProps> = ({
     const normY = 1 - (y - chartPadding.top) / mainChartHeight;
     const clickedPrice = minPrice + normY * priceRange;
 
+    setDrawingsHistory((prev) => [...prev, drawings]);
+    setDrawingsRedoHistory([]);
+
     const newDrawing: DrawingObject = {
       id: `draw-${Date.now()}`,
       type: activeDrawingTool,
@@ -513,6 +571,8 @@ export const StockChart: React.FC<StockChartProps> = ({
           ? '#f23645'
           : activeDrawingTool === 'fib_retrace'
           ? '#f59e0b'
+          : activeDrawingTool === 'anchored_vwap'
+          ? '#ec4899'
           : '#2962ff',
       entryPrice: clickedPrice,
       targetPrice:
@@ -525,6 +585,22 @@ export const StockChart: React.FC<StockChartProps> = ({
     };
 
     setDrawings((prev) => [...prev, newDrawing]);
+  };
+
+  const handleUndoDrawing = () => {
+    if (drawingsHistory.length === 0) return;
+    const prev = drawingsHistory[drawingsHistory.length - 1];
+    setDrawingsRedoHistory((r) => [...r, drawings]);
+    setDrawings(prev);
+    setDrawingsHistory((h) => h.slice(0, -1));
+  };
+
+  const handleRedoDrawing = () => {
+    if (drawingsRedoHistory.length === 0) return;
+    const next = drawingsRedoHistory[drawingsRedoHistory.length - 1];
+    setDrawingsHistory((h) => [...h, drawings]);
+    setDrawings(next);
+    setDrawingsRedoHistory((r) => r.slice(0, -1));
   };
 
   const activeCandle =
@@ -873,7 +949,12 @@ export const StockChart: React.FC<StockChartProps> = ({
           {[
             { id: 'crosshair', title: 'Crosshair', icon: Compass },
             { id: 'trendline', title: 'Trend Line', icon: TrendingUp },
+            { id: 'arrow', title: 'Arrow Pointer', icon: ArrowRight },
+            { id: 'parallel_channel', title: 'Parallel Channel', icon: Columns2 },
             { id: 'fib_retrace', title: 'Fibonacci Retracement', icon: Sliders },
+            { id: 'pitchfork', title: "Andrews' Pitchfork", icon: GitBranch },
+            { id: 'elliott_wave', title: 'Elliott Wave (1-2-3-4-5)', icon: Activity },
+            { id: 'anchored_vwap', title: 'Anchored VWAP', icon: Layers },
             { id: 'rectangle', title: 'Rectangle Shape', icon: Square },
             { id: 'long_position', title: 'Long Position (Risk / Reward)', icon: ArrowUpRight },
             { id: 'short_position', title: 'Short Position (Risk / Reward)', icon: ArrowDownRight },
@@ -896,6 +977,26 @@ export const StockChart: React.FC<StockChartProps> = ({
               </button>
             );
           })}
+
+          <div className="w-6 h-px bg-[#1c2230] my-1" />
+
+          {/* Undo / Redo buttons */}
+          <button
+            onClick={handleUndoDrawing}
+            disabled={drawingsHistory.length === 0}
+            title="Undo drawing action"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <Undo2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={handleRedoDrawing}
+            disabled={drawingsRedoHistory.length === 0}
+            title="Redo drawing action"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <Redo2 className="w-3.5 h-3.5" />
+          </button>
 
           <div className="w-6 h-px bg-[#1c2230] my-1" />
 
@@ -1103,6 +1204,152 @@ export const StockChart: React.FC<StockChartProps> = ({
               />
             )}
 
+            {/* INDICATOR: Supertrend (10, 3) */}
+            {indicators.some((i) => i.type === 'SUPERTREND' && i.visible) && (
+              <g>
+                {supertrend.supertrend.map((val, i) => {
+                  if (val === null || i === 0 || supertrend.supertrend[i - 1] === null) return null;
+                  const dir = supertrend.direction[i];
+                  const color = dir === 1 ? '#10b981' : '#ef4444';
+                  return (
+                    <line
+                      key={`st-${i}`}
+                      x1={getX(i - 1)}
+                      y1={getY(supertrend.supertrend[i - 1]!)}
+                      x2={getX(i)}
+                      y2={getY(val)}
+                      stroke={color}
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                  );
+                })}
+              </g>
+            )}
+
+            {/* INDICATOR: VWAP (Volume Weighted Average Price) */}
+            {indicators.some((i) => i.type === 'VWAP' && i.visible) && (
+              <path
+                d={vwap
+                  .map((val, i) => {
+                    if (val === null) return '';
+                    const prefix = i === 0 ? 'M ' : ' L ';
+                    return `${prefix}${getX(i)},${getY(val)}`;
+                  })
+                  .join('')}
+                fill="none"
+                stroke="#ec4899"
+                strokeWidth="2"
+                strokeDasharray="4 2"
+              />
+            )}
+
+            {/* INDICATOR: Ichimoku Cloud */}
+            {indicators.some((i) => i.type === 'ICHIMOKU' && i.visible) && (
+              <g>
+                {/* Cloud Shading between Span A and Span B */}
+                {ichimoku.senkouA.map((a, i) => {
+                  const b = ichimoku.senkouB[i];
+                  if (a === null || b === null || i === 0) return null;
+                  const prevA = ichimoku.senkouA[i - 1];
+                  const prevB = ichimoku.senkouB[i - 1];
+                  if (prevA === null || prevB === null) return null;
+                  const x1 = getX(i - 1);
+                  const x2 = getX(i);
+                  const yA1 = getY(prevA);
+                  const yA2 = getY(a);
+                  const yB1 = getY(prevB);
+                  const yB2 = getY(b);
+                  const isBullishCloud = a >= b;
+                  return (
+                    <polygon
+                      key={`cloud-${i}`}
+                      points={`${x1},${yA1} ${x2},${yA2} ${x2},${yB2} ${x1},${yB1}`}
+                      fill={isBullishCloud ? '#10b981' : '#ef4444'}
+                      fillOpacity="0.18"
+                    />
+                  );
+                })}
+                {/* Tenkan-sen (Blue) */}
+                <path
+                  d={ichimoku.tenkan.map((v, i) => (v === null ? '' : `${i === 0 ? 'M ' : ' L '}${getX(i)},${getY(v)}`)).join('')}
+                  fill="none"
+                  stroke="#3b82f6"
+                  strokeWidth="1.5"
+                />
+                {/* Kijun-sen (Orange) */}
+                <path
+                  d={ichimoku.kijun.map((v, i) => (v === null ? '' : `${i === 0 ? 'M ' : ' L '}${getX(i)},${getY(v)}`)).join('')}
+                  fill="none"
+                  stroke="#f97316"
+                  strokeWidth="1.5"
+                />
+              </g>
+            )}
+
+            {/* INDICATOR: Parabolic SAR Dots */}
+            {indicators.some((i) => i.type === 'PSAR' && i.visible) && (
+              <g>
+                {psar.map((val, i) => {
+                  if (val === null || i >= displayCandles.length) return null;
+                  const c = displayCandles[i];
+                  const isBelow = val < c.close;
+                  return (
+                    <circle
+                      key={`psar-${i}`}
+                      cx={getX(i)}
+                      cy={getY(val)}
+                      r="2"
+                      fill={isBelow ? '#10b981' : '#ef4444'}
+                    />
+                  );
+                })}
+              </g>
+            )}
+
+            {/* PINE SCRIPT OVERLAY PLOTS */}
+            {pineResult?.plots.map((pl) => (
+              <path
+                key={pl.id}
+                d={pl.values
+                  .map((v, i) => (v === null ? '' : `${i === 0 ? 'M ' : ' L '}${getX(i)},${getY(v)}`))
+                  .join('')}
+                fill="none"
+                stroke={pl.color}
+                strokeWidth={pl.lineWidth}
+                strokeLinecap="round"
+              />
+            ))}
+
+            {/* PINE SCRIPT STRATEGY MARKERS (BUY/SELL) */}
+            {pineResult?.markers.map((m, idx) => {
+              if (m.index >= displayCandles.length) return null;
+              const x = getX(m.index);
+              const y = getY(m.price);
+              const isBuy = m.type === 'BUY';
+              return (
+                <g key={`marker-${idx}`} transform={`translate(${x}, ${y})`}>
+                  <polygon
+                    points={isBuy ? '0,6 -5,14 5,14' : '0,-6 -5,-14 5,-14'}
+                    fill={m.color}
+                    stroke="#000"
+                    strokeWidth="0.8"
+                  />
+                  <text
+                    x="0"
+                    y={isBuy ? 24 : -18}
+                    textAnchor="middle"
+                    fill={m.color}
+                    fontSize="9"
+                    fontWeight="bold"
+                    fontFamily="JetBrains Mono"
+                  >
+                    {m.label}
+                  </text>
+                </g>
+              );
+            })}
+
             {/* MAIN CHART RENDERING: Area vs Candlestick vs Line */}
             {chartType === 'area' ? (
               <g>
@@ -1255,9 +1502,102 @@ export const StockChart: React.FC<StockChartProps> = ({
                       x1={chartPadding.left}
                       y1={p.y}
                       x2={chartPadding.left + chartWidth}
-                      y2={p.y - 40}
+                      y2={p.y - 30}
                       stroke="#2962ff"
                       strokeWidth="2"
+                    />
+                  );
+                }
+
+                if (draw.type === 'arrow' && draw.points.length > 0) {
+                  const p = draw.points[0];
+                  return (
+                    <g key={draw.id}>
+                      <line
+                        x1={p.x}
+                        y1={p.y}
+                        x2={p.x + 80}
+                        y2={p.y - 40}
+                        stroke="#06b6d4"
+                        strokeWidth="2"
+                      />
+                      <polygon
+                        points={`${p.x + 80},${p.y - 40} ${p.x + 68},${p.y - 46} ${p.x + 72},${p.y - 32}`}
+                        fill="#06b6d4"
+                      />
+                    </g>
+                  );
+                }
+
+                if (draw.type === 'parallel_channel' && draw.points.length > 0) {
+                  const p = draw.points[0];
+                  return (
+                    <g key={draw.id}>
+                      <polygon
+                        points={`${p.x},${p.y} ${p.x + 180},${p.y - 40} ${p.x + 180},${p.y + 20} ${p.x},${p.y + 60}`}
+                        fill="#2962ff"
+                        fillOpacity="0.15"
+                        stroke="#2962ff"
+                        strokeWidth="1.5"
+                      />
+                      <line x1={p.x} y1={p.y + 30} x2={p.x + 180} y2={p.y - 10} stroke="#2962ff" strokeDasharray="3 3" />
+                    </g>
+                  );
+                }
+
+                if (draw.type === 'pitchfork' && draw.points.length > 0) {
+                  const p = draw.points[0];
+                  return (
+                    <g key={draw.id}>
+                      <line x1={p.x} y1={p.y} x2={p.x + 160} y2={p.y - 30} stroke="#f59e0b" strokeWidth="2" />
+                      <line x1={p.x} y1={p.y - 30} x2={p.x + 160} y2={p.y - 60} stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="2 2" />
+                      <line x1={p.x} y1={p.y + 30} x2={p.x + 160} y2={p.y} stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="2 2" />
+                    </g>
+                  );
+                }
+
+                if (draw.type === 'elliott_wave' && draw.points.length > 0) {
+                  const p = draw.points[0];
+                  const wavePts = [
+                    { x: p.x, y: p.y, label: '(1)' },
+                    { x: p.x + 35, y: p.y - 35, label: '(2)' },
+                    { x: p.x + 60, y: p.y - 15, label: '(3)' },
+                    { x: p.x + 110, y: p.y - 65, label: '(4)' },
+                    { x: p.x + 140, y: p.y - 40, label: '(5)' },
+                  ];
+                  return (
+                    <g key={draw.id}>
+                      <polyline
+                        points={wavePts.map((pt) => `${pt.x},${pt.y}`).join(' ')}
+                        fill="none"
+                        stroke="#a855f7"
+                        strokeWidth="1.8"
+                        strokeDasharray="3 2"
+                      />
+                      {wavePts.map((pt, wIdx) => (
+                        <g key={wIdx}>
+                          <circle cx={pt.x} cy={pt.y} r="3" fill="#a855f7" />
+                          <text x={pt.x} y={pt.y - 6} fill="#a855f7" fontSize="9" fontWeight="bold" textAnchor="middle">
+                            {pt.label}
+                          </text>
+                        </g>
+                      ))}
+                    </g>
+                  );
+                }
+
+                if (draw.type === 'anchored_vwap' && draw.points.length > 0) {
+                  const p = draw.points[0];
+                  return (
+                    <line
+                      key={draw.id}
+                      x1={p.x}
+                      y1={p.y}
+                      x2={chartPadding.left + chartWidth}
+                      y2={getY(stock.price)}
+                      stroke="#ec4899"
+                      strokeWidth="2"
+                      strokeDasharray="4 2"
                     />
                   );
                 }
@@ -1265,68 +1605,159 @@ export const StockChart: React.FC<StockChartProps> = ({
                 return null;
               })}
 
-            {/* SUB-PANEL: RSI (14) OSCILLATOR */}
-            {isRsiVisible && (
-              <g transform={`translate(0, ${chartPadding.top + mainChartHeight + 15})`}>
-                {/* Subpanel background */}
+            {/* SUB-PANELS: STOCHASTIC, MACD, RSI, ATR, ADX, CCI */}
+            {hasSubPanel && (
+              <g transform={`translate(0, ${chartPadding.top + mainChartHeight + 12})`}>
                 <rect
                   x={chartPadding.left}
                   y="0"
                   width={chartWidth}
-                  height={subPanelHeight - 20}
+                  height={subPanelHeight - 16}
                   fill="#080a10"
                   stroke="#1c2230"
                   strokeWidth="1"
                 />
 
-                {/* Overbought (70) and Oversold (30) levels */}
-                <line
-                  x1={chartPadding.left}
-                  y1={(subPanelHeight - 20) * 0.3}
-                  x2={chartPadding.left + chartWidth}
-                  y2={(subPanelHeight - 20) * 0.3}
-                  stroke="#f23645"
-                  strokeDasharray="2 3"
-                  opacity="0.6"
-                />
-                <line
-                  x1={chartPadding.left}
-                  y1={(subPanelHeight - 20) * 0.7}
-                  x2={chartPadding.left + chartWidth}
-                  y2={(subPanelHeight - 20) * 0.7}
-                  stroke="#22ab94"
-                  strokeDasharray="2 3"
-                  opacity="0.6"
-                />
+                {/* Sub-panel: RSI */}
+                {isRsiVisible && (
+                  <g>
+                    <line x1={chartPadding.left} y1={(singleSubHeight - 16) * 0.3} x2={chartPadding.left + chartWidth} y2={(singleSubHeight - 16) * 0.3} stroke="#f23645" strokeDasharray="2 3" opacity="0.6" />
+                    <line x1={chartPadding.left} y1={(singleSubHeight - 16) * 0.7} x2={chartPadding.left + chartWidth} y2={(singleSubHeight - 16) * 0.7} stroke="#22ab94" strokeDasharray="2 3" opacity="0.6" />
+                    <path
+                      d={rsiValues
+                        .map((val, i) => {
+                          if (val === null) return '';
+                          const rsiY = (1 - val / 100) * (singleSubHeight - 16);
+                          const prefix = i === 14 ? 'M ' : ' L ';
+                          return `${prefix}${getX(i)},${rsiY}`;
+                        })
+                        .join('')}
+                      fill="none"
+                      stroke="#a855f7"
+                      strokeWidth="1.8"
+                    />
+                    <text x={chartPadding.left + 8} y="12" fill="#a855f7" fontSize="10" fontWeight="bold" fontFamily="JetBrains Mono">
+                      RSI 14 : {rsiValues[rsiValues.length - 1] !== null ? (rsiValues[rsiValues.length - 1] as number).toFixed(1) : '54.2'}
+                    </text>
+                  </g>
+                )}
 
-                {/* RSI Curve */}
-                <path
-                  d={rsiValues
-                    .map((val, i) => {
-                      if (val === null) return '';
-                      const rsiY = (1 - val / 100) * (subPanelHeight - 20);
-                      const prefix = i === 14 ? 'M ' : ' L ';
-                      return `${prefix}${getX(i)},${rsiY}`;
-                    })
-                    .join('')}
-                  fill="none"
-                  stroke="#a855f7"
-                  strokeWidth="1.8"
-                />
+                {/* Sub-panel: MACD */}
+                {isMacdVisible && (
+                  <g transform={`translate(0, ${isRsiVisible ? singleSubHeight : 0})`}>
+                    {macdData.histogram.map((hist, i) => {
+                      if (hist === null) return null;
+                      const x = getX(i);
+                      const isUp = hist >= 0;
+                      const midY = (singleSubHeight - 16) / 2;
+                      const barH = Math.min(25, Math.abs(hist) * 8);
+                      const barY = isUp ? midY - barH : midY;
+                      return (
+                        <rect
+                          key={`hist-${i}`}
+                          x={x - 1}
+                          y={barY}
+                          width={2}
+                          height={Math.max(1, barH)}
+                          fill={isUp ? '#22ab94' : '#f23645'}
+                          opacity="0.8"
+                        />
+                      );
+                    })}
+                    <text x={chartPadding.left + 8} y="12" fill="#3b82f6" fontSize="10" fontWeight="bold" fontFamily="JetBrains Mono">
+                      MACD (12, 26, 9)
+                    </text>
+                  </g>
+                )}
 
-                <text
-                  x={chartPadding.left + 8}
-                  y="14"
-                  fill="#a855f7"
-                  fontSize="10"
-                  fontWeight="bold"
-                  fontFamily="JetBrains Mono"
-                >
-                  RSI 14 :{' '}
-                  {rsiValues[rsiValues.length - 1] !== null
-                    ? (rsiValues[rsiValues.length - 1] as number).toFixed(1)
-                    : '54.2'}
-                </text>
+                {/* Sub-panel: Stochastic */}
+                {isStochVisible && (
+                  <g transform={`translate(0, ${(isRsiVisible ? 1 : 0 + (isMacdVisible ? 1 : 0)) * singleSubHeight})`}>
+                    <line x1={chartPadding.left} y1={(singleSubHeight - 16) * 0.2} x2={chartPadding.left + chartWidth} y2={(singleSubHeight - 16) * 0.2} stroke="#f23645" strokeDasharray="2 3" opacity="0.6" />
+                    <line x1={chartPadding.left} y1={(singleSubHeight - 16) * 0.8} x2={chartPadding.left + chartWidth} y2={(singleSubHeight - 16) * 0.8} stroke="#22ab94" strokeDasharray="2 3" opacity="0.6" />
+                    <path
+                      d={stoch.k
+                        .map((val, i) => (val === null ? '' : `${i === 0 ? 'M ' : ' L '}${getX(i)},${(1 - val / 100) * (singleSubHeight - 16)}`))
+                        .join('')}
+                      fill="none"
+                      stroke="#eab308"
+                      strokeWidth="1.6"
+                    />
+                    <path
+                      d={stoch.d
+                        .map((val, i) => (val === null ? '' : `${i === 0 ? 'M ' : ' L '}${getX(i)},${(1 - val / 100) * (singleSubHeight - 16)}`))
+                        .join('')}
+                      fill="none"
+                      stroke="#f97316"
+                      strokeWidth="1.4"
+                      strokeDasharray="2 2"
+                    />
+                    <text x={chartPadding.left + 8} y="12" fill="#eab308" fontSize="10" fontWeight="bold" fontFamily="JetBrains Mono">
+                      Stochastic (14, 3, 3) %K: {stoch.k[stoch.k.length - 1]?.toFixed(1) || '48.2'} %D: {stoch.d[stoch.d.length - 1]?.toFixed(1) || '46.8'}
+                    </text>
+                  </g>
+                )}
+
+                {/* Sub-panel: ATR */}
+                {isAtrVisible && (
+                  <g transform={`translate(0, 0)`}>
+                    <path
+                      d={atr
+                        .map((val, i) => {
+                          if (val === null) return '';
+                          const normAtr = Math.min(1, Math.max(0, val / (stock.price * 0.05 || 1)));
+                          const atrY = (1 - normAtr) * (singleSubHeight - 16);
+                          return `${i === 0 ? 'M ' : ' L '}${getX(i)},${atrY}`;
+                        })
+                        .join('')}
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="1.8"
+                    />
+                    <text x={chartPadding.left + 8} y="12" fill="#ef4444" fontSize="10" fontWeight="bold" fontFamily="JetBrains Mono">
+                      ATR 14: {atr[atr.length - 1]?.toFixed(2) || '2.40'}
+                    </text>
+                  </g>
+                )}
+
+                {/* Sub-panel: ADX */}
+                {isAdxVisible && (
+                  <g transform={`translate(0, 0)`}>
+                    <path
+                      d={adx.adx
+                        .map((val, i) => (val === null ? '' : `${i === 0 ? 'M ' : ' L '}${getX(i)},${(1 - val / 100) * (singleSubHeight - 16)}`))
+                        .join('')}
+                      fill="none"
+                      stroke="#8b5cf6"
+                      strokeWidth="1.8"
+                    />
+                    <text x={chartPadding.left + 8} y="12" fill="#8b5cf6" fontSize="10" fontWeight="bold" fontFamily="JetBrains Mono">
+                      ADX 14: {adx.adx[adx.adx.length - 1]?.toFixed(1) || '28.4'} (Trend Strength)
+                    </text>
+                  </g>
+                )}
+
+                {/* Sub-panel: CCI */}
+                {isCciVisible && (
+                  <g transform={`translate(0, 0)`}>
+                    <path
+                      d={cci
+                        .map((val, i) => {
+                          if (val === null) return '';
+                          const clamped = Math.max(-200, Math.min(200, val));
+                          const normCci = (clamped + 200) / 400;
+                          return `${i === 0 ? 'M ' : ' L '}${getX(i)},${(1 - normCci) * (singleSubHeight - 16)}`;
+                        })
+                        .join('')}
+                      fill="none"
+                      stroke="#06b6d4"
+                      strokeWidth="1.8"
+                    />
+                    <text x={chartPadding.left + 8} y="12" fill="#06b6d4" fontSize="10" fontWeight="bold" fontFamily="JetBrains Mono">
+                      CCI 20: {cci[cci.length - 1]?.toFixed(1) || '45.0'}
+                    </text>
+                  </g>
+                )}
               </g>
             )}
 
@@ -1358,6 +1789,10 @@ export const StockChart: React.FC<StockChartProps> = ({
             <g>
               {yAxisTicks.map((price, i) => {
                 const y = getY(price);
+                const displayLabel =
+                  scaleMode === 'percent' && displayCandles.length > 0
+                    ? `${(((price - displayCandles[0].close) / displayCandles[0].close) * 100).toFixed(2)}%`
+                    : formatTV(price, price >= 1000 ? 4 : 2);
                 return (
                   <text
                     key={`y-tick-${i}`}
@@ -1368,7 +1803,7 @@ export const StockChart: React.FC<StockChartProps> = ({
                     fontFamily="JetBrains Mono"
                     fontWeight="500"
                   >
-                    {formatTV(price, price >= 1000 ? 4 : 2)}
+                    {displayLabel}
                   </text>
                 );
               })}
@@ -1384,7 +1819,50 @@ export const StockChart: React.FC<StockChartProps> = ({
                   fontWeight="700"
                   fontFamily="JetBrains Mono"
                 >
-                  {formatTV(stock.price, stock.price >= 1000 ? 4 : 2)}
+                  {scaleMode === 'percent' && displayCandles.length > 0
+                    ? `${(((stock.price - displayCandles[0].close) / displayCandles[0].close) * 100).toFixed(2)}%`
+                    : formatTV(stock.price, stock.price >= 1000 ? 4 : 2)}
+                </text>
+              </g>
+
+              {/* Scale Mode Switcher (Linear | Log | %) */}
+              <g transform={`translate(${chartPadding.left + chartWidth + 4}, ${chartPadding.top + mainChartHeight - 22})`}>
+                <rect width={chartPadding.right - 8} height="18" rx="4" fill="#141a24" stroke="#222b3b" strokeWidth="0.8" />
+                <text
+                  x="6"
+                  y="13"
+                  fill={scaleMode === 'linear' ? '#2962ff' : '#787b86'}
+                  fontSize="9"
+                  fontWeight="bold"
+                  fontFamily="JetBrains Mono"
+                  className="cursor-pointer"
+                  onClick={() => setScaleMode('linear')}
+                >
+                  REG
+                </text>
+                <text
+                  x="30"
+                  y="13"
+                  fill={scaleMode === 'log' ? '#06b6d4' : '#787b86'}
+                  fontSize="9"
+                  fontWeight="bold"
+                  fontFamily="JetBrains Mono"
+                  className="cursor-pointer"
+                  onClick={() => setScaleMode('log')}
+                >
+                  LOG
+                </text>
+                <text
+                  x="56"
+                  y="13"
+                  fill={scaleMode === 'percent' ? '#10b981' : '#787b86'}
+                  fontSize="9"
+                  fontWeight="bold"
+                  fontFamily="JetBrains Mono"
+                  className="cursor-pointer"
+                  onClick={() => setScaleMode('percent')}
+                >
+                  %
                 </text>
               </g>
             </g>

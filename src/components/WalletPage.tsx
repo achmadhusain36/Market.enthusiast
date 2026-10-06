@@ -77,7 +77,7 @@ export const WalletPage: React.FC<WalletPageProps> = ({
         method: 'Transfer Bank BCA',
         timestamp: '29 Sep 2026, 16:45 WIB',
         status: 'SUCCESS',
-        accountDestination: 'BCA 88299104 (Achmad Husain)',
+        accountDestination: `BCA 88299104 (${userProfile?.name || 'Market Enthusiast'})`,
       },
     ];
   });
@@ -152,7 +152,7 @@ export const WalletPage: React.FC<WalletPageProps> = ({
         method: 'BCA Rekening Utama (88299104)',
         timestamp: new Date().toLocaleString(isId ? 'id-ID' : 'en-US'),
         status: 'SUCCESS',
-        accountDestination: 'BCA 88299104 (Achmad Husain)',
+        accountDestination: `BCA 88299104 (${userProfile?.name || 'Market Enthusiast'})`,
       };
 
       setWalletHistory((prev) => [newTx, ...prev]);
@@ -428,7 +428,7 @@ export const WalletPage: React.FC<WalletPageProps> = ({
                   </span>
                 </h4>
                 <p className="text-xs text-neutral-400 font-mono mt-0.5">
-                  Bank Central Asia (BCA) • No. Rekening: <strong>8829-9104-00</strong> • a/n Achmad Husain
+                  Bank Central Asia (BCA) • No. Rekening: <strong>8829-9104-00</strong> • a/n {userProfile?.name || 'Market Enthusiast'}
                 </p>
               </div>
             </div>
@@ -625,7 +625,7 @@ export const WalletPage: React.FC<WalletPageProps> = ({
               </div>
               <div>
                 <div className="text-xs font-bold text-white">Bank Central Asia (BCA)</div>
-                <div className="text-[11px] text-neutral-400 font-mono">8829-9104-00 • Achmad Husain</div>
+                <div className="text-[11px] text-neutral-400 font-mono">8829-9104-00 • {userProfile?.name || 'Market Enthusiast'}</div>
               </div>
             </div>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold font-mono">

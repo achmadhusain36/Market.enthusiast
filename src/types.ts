@@ -147,7 +147,12 @@ export type DrawingToolType =
   | 'long_position'
   | 'short_position'
   | 'measure'
-  | 'eraser';
+  | 'eraser'
+  | 'pitchfork'
+  | 'elliott_wave'
+  | 'arrow'
+  | 'parallel_channel'
+  | 'anchored_vwap';
 
 export interface DrawingPoint {
   x: number;
@@ -185,7 +190,11 @@ export type IndicatorType =
   | 'VWAP'
   | 'VOL_PROFILE'
   | 'ICHIMOKU'
-  | 'PSAR';
+  | 'PSAR'
+  | 'ADX'
+  | 'CCI'
+  | 'OBV'
+  | 'WILLIAMS_R';
 
 export interface TechnicalIndicator {
   id: string;
@@ -198,11 +207,21 @@ export interface TechnicalIndicator {
 }
 
 // Price Alert Engine
+export type AlertCondition =
+  | 'crossing'
+  | 'greater_than'
+  | 'less_than'
+  | 'cross_above_ema50'
+  | 'cross_below_ema50'
+  | 'rsi_overbought'
+  | 'rsi_oversold'
+  | 'supertrend_flip';
+
 export interface PriceAlert {
   id: string;
   symbol: string;
   targetPrice: number;
-  condition: 'crossing' | 'greater_than' | 'less_than';
+  condition: AlertCondition;
   triggered: boolean;
   createdAt: string;
   triggeredAt?: string;

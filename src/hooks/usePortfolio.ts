@@ -130,30 +130,30 @@ export function usePortfolio() {
   const { assets } = useMarketData();
 
   const [positions, setPositions] = useState<Position[]>(() => {
-    const saved = localStorage.getItem('nusa_portfolio_positions');
+    const saved = localStorage.getItem('me_portfolio_positions') || localStorage.getItem('nusa_portfolio_positions');
     return saved ? JSON.parse(saved) : INITIAL_POSITIONS;
   });
 
   const [orders, setOrders] = useState<TradeOrder[]>(() => {
-    const saved = localStorage.getItem('nusa_trade_orders');
+    const saved = localStorage.getItem('me_trade_orders') || localStorage.getItem('nusa_trade_orders');
     return saved ? JSON.parse(saved) : INITIAL_ORDERS;
   });
 
   const [walletHistory, setWalletHistory] = useState<WalletRecord[]>(() => {
-    const saved = localStorage.getItem('nusa_wallet_history');
+    const saved = localStorage.getItem('me_wallet_history') || localStorage.getItem('nusa_wallet_history');
     return saved ? JSON.parse(saved) : INITIAL_WALLET;
   });
 
   useEffect(() => {
-    localStorage.setItem('nusa_portfolio_positions', JSON.stringify(positions));
+    localStorage.setItem('me_portfolio_positions', JSON.stringify(positions));
   }, [positions]);
 
   useEffect(() => {
-    localStorage.setItem('nusa_trade_orders', JSON.stringify(orders));
+    localStorage.setItem('me_trade_orders', JSON.stringify(orders));
   }, [orders]);
 
   useEffect(() => {
-    localStorage.setItem('nusa_wallet_history', JSON.stringify(walletHistory));
+    localStorage.setItem('me_wallet_history', JSON.stringify(walletHistory));
   }, [walletHistory]);
 
   // Calculate detailed holding performance with live prices

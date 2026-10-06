@@ -106,7 +106,7 @@ export const RegisterPage: React.FC = () => {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="nusa_trader"
+            placeholder="market_trader"
             leftIcon={<User className="w-4 h-4" />}
             required
           />

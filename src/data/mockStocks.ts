@@ -1,7 +1,7 @@
 import { StockQuote, MarketIndex, PortfolioHolding, Transaction, UserProfile, CandleData, Timeframe } from '../types';
 
 export const INITIAL_USER_PROFILE: UserProfile = {
-  name: 'Achmad Husain',
+  name: 'Market Enthusiast',
   title: 'Stock Investor & Global Market Analyst',
   email: 'emhaainunnajib36@gmail.com',
   phone: '+62 812-3456-7890',
@@ -10,9 +10,9 @@ export const INITIAL_USER_PROFILE: UserProfile = {
   selectedCurrency: 'IDR',
   usdIdrRate: 16000,
   riskProfile: 'Aggressive',
-  accountNumber: 'RDN-8829-9104-HUS',
-  memberSince: 'January 2023',
-  language: 'en',
+  accountNumber: 'RDN-8829-9104-ME',
+  memberSince: 'January 2024',
+  language: 'id',
 };
 
 export const INITIAL_GLOBAL_INDICES: MarketIndex[] = [
@@ -813,97 +813,10 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
   },
 ];
 
+import { generateSeededCandles } from '../utils/candleGenerator';
+
 // Generator for Candlestick & Area historical data for a given stock and timeframe
-export function generateCandles(currentPrice: number, timeframe: Timeframe): CandleData[] {
-  let count = 50;
-  let volatility = currentPrice * 0.02;
-
-  switch (timeframe) {
-    case '1D':
-      count = 40;
-      volatility = currentPrice * 0.005;
-      break;
-    case '5D':
-      count = 45;
-      volatility = currentPrice * 0.012;
-      break;
-    case '1M':
-      count = 55;
-      volatility = currentPrice * 0.025;
-      break;
-    case '6M':
-      count = 60;
-      volatility = currentPrice * 0.04;
-      break;
-    case 'YTD':
-      count = 65;
-      volatility = currentPrice * 0.055;
-      break;
-    case '1Y':
-      count = 70;
-      volatility = currentPrice * 0.07;
-      break;
-    case '5Y':
-      count = 80;
-      volatility = currentPrice * 0.12;
-      break;
-    case '10Y':
-      count = 90;
-      volatility = currentPrice * 0.18;
-      break;
-    case 'ALL':
-      count = 100;
-      volatility = currentPrice * 0.25;
-      break;
-  }
-
-  const candles: CandleData[] = [];
-  // Trend profile: if COMPOSITE in 1M, recent dip like in screenshot
-  let price = currentPrice * (1 + (Math.random() * 0.04 - 0.02));
-  const now = Date.now();
-  const stepMs = (24 * 3600 * 1000 * (timeframe === '1D' ? 1 : timeframe === '5D' ? 5 : 30)) / count;
-
-  for (let i = count - 1; i >= 0; i--) {
-    const timestamp = now - i * stepMs;
-    const date = new Date(timestamp);
-    let time = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-    if (timeframe !== '1D') {
-      time = `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })}`;
-    }
-
-    const delta = (Math.random() - 0.49) * volatility;
-    const open = price;
-    const close = i === 0 ? currentPrice : Math.max(open + delta, currentPrice * 0.5);
-    const high = Math.max(open, close) + Math.random() * volatility * 0.4;
-    const low = Math.min(open, close) - Math.random() * volatility * 0.4;
-    const volume = Math.floor(Math.random() * 800000 + 200000);
-
-    candles.push({
-      time,
-      timestamp,
-      open: Number(open.toFixed(4)),
-      high: Number(high.toFixed(4)),
-      low: Number(low.toFixed(4)),
-      close: Number(close.toFixed(4)),
-      volume,
-    });
-
-    price = close;
-  }
-
-  // Calculate MA20 and MA50
-  for (let i = 0; i < candles.length; i++) {
-    if (i >= 19) {
-      const slice20 = candles.slice(i - 19, i + 1);
-      const sum20 = slice20.reduce((acc, c) => acc + c.close, 0);
-      candles[i].ma20 = Number((sum20 / 20).toFixed(2));
-    }
-    if (i >= 49) {
-      const slice50 = candles.slice(i - 49, i + 1);
-      const sum50 = slice50.reduce((acc, c) => acc + c.close, 0);
-      candles[i].ma50 = Number((sum50 / 50).toFixed(2));
-    }
-  }
-
-  return candles;
+// Now uses deterministic seeded PRNG so that switching timeframes keeps consistent historical bars
+export function generateCandles(currentPrice: number, timeframe: Timeframe, symbol: string = 'COMPOSITE'): CandleData[] {
+  return generateSeededCandles(symbol, currentPrice, timeframe);
 }

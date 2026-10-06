@@ -76,7 +76,7 @@ export const TRANSLATIONS = {
 
     // Holdings Table
     holdingsTitle: 'Portofolio Saham Dimiliki',
-    holdingsSubtitle: 'Posisi aktif Achmad Husain di pasar ekuitas global',
+    holdingsSubtitle: 'Posisi aktif portofolio di pasar ekuitas global & domestik',
     holdingsTotal: 'Total Posisi',
     colAsset: 'Aset Saham',
     colShares: 'Jumlah Lembar',
@@ -90,7 +90,7 @@ export const TRANSLATIONS = {
 
     // Transactions History
     txTitle: 'Riwayat Transaksi Terakhir',
-    txSubtitle: 'Semua order beli dan jual Achmad Husain tersinkronisasi live',
+    txSubtitle: 'Semua order beli dan jual portofolio tersinkronisasi live',
     txFilterAll: 'Semua Transaksi',
     txFilterBuy: 'Hanya Beli',
     txFilterSell: 'Hanya Jual',
@@ -121,7 +121,7 @@ export const TRANSLATIONS = {
 
     // Profile & Settings Modal
     settingsTitle: 'Pengaturan & Profil Pemilik',
-    settingsSubtitle: 'Atur bahasa aplikasi, data profil, dan saldo kas RDN Achmad Husain',
+    settingsSubtitle: 'Atur bahasa aplikasi, data profil, dan saldo kas RDN akun Anda',
     tabGeneralSettings: 'Pengaturan Umum',
     tabLanguage: 'Bahasa (Language)',
     tabCashBalance: 'Saldo Kas & RDN',
@@ -222,7 +222,7 @@ export const TRANSLATIONS = {
 
     // Holdings Table
     holdingsTitle: 'Owned Stock Portfolio',
-    holdingsSubtitle: "Achmad Husain's active positions in global equity markets",
+    holdingsSubtitle: 'Active equity positions across global and IDX markets',
     holdingsTotal: 'Total Positions',
     colAsset: 'Stock Asset',
     colShares: 'Total Shares',
@@ -236,7 +236,7 @@ export const TRANSLATIONS = {
 
     // Transactions History
     txTitle: 'Recent Transactions History',
-    txSubtitle: "All Achmad Husain's buy & sell orders synchronized live",
+    txSubtitle: 'All portfolio buy & sell orders synchronized live',
     txFilterAll: 'All Transactions',
     txFilterBuy: 'Buy Only',
     txFilterSell: 'Sell Only',
@@ -267,7 +267,7 @@ export const TRANSLATIONS = {
 
     // Profile & Settings Modal
     settingsTitle: 'Settings & Owner Profile',
-    settingsSubtitle: "Configure application language, profile details, and Achmad Husain's cash balance",
+    settingsSubtitle: 'Configure application language, profile details, and account cash balance',
     tabGeneralSettings: 'General Settings',
     tabLanguage: 'Language',
     tabCashBalance: 'Cash & RDN Balance',

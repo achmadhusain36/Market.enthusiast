@@ -34,7 +34,15 @@ export const TerminalLogo: React.FC<TerminalLogoProps> = ({
     '2xl': 'w-24 h-24',
   };
 
-  const logoImagePath = '/src/assets/images/market_terminal_logo_1790660434338.jpg';
+  const [logoSrc, setLogoSrc] = useState('/logo.webp');
+
+  const handleImageError = () => {
+    if (logoSrc === '/logo.webp') {
+      setLogoSrc('/logo.jpg');
+    } else {
+      setImageError(true);
+    }
+  };
 
   return (
     <div className={`inline-flex items-center gap-3 select-none ${className}`}>
@@ -48,11 +56,11 @@ export const TerminalLogo: React.FC<TerminalLogoProps> = ({
         >
           {!imageError ? (
             <img
-              src={logoImagePath}
+              src={logoSrc}
               alt="Market Terminal Logo"
               referrerPolicy="no-referrer"
               className={`object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300 ${imageSizeMap[size]}`}
-              onError={() => setImageError(true)}
+              onError={handleImageError}
             />
           ) : (
             /* Crisp SVG Fallback Emblem */

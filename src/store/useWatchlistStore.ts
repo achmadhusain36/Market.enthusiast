@@ -12,8 +12,11 @@ export interface PriceAlert {
 
 const DEFAULT_SYMBOLS = ['BTC/USD', 'ETH/USD', 'BBCA.JK', 'NVDA', 'XAU/USD'];
 
+const WATCHLIST_STORAGE_KEY = 'me_watchlist_symbols';
+const ALERTS_STORAGE_KEY = 'me_price_alerts';
+
 let storedWatchlist: string[] = (() => {
-  const saved = localStorage.getItem('nusa_watchlist_symbols');
+  const saved = localStorage.getItem(WATCHLIST_STORAGE_KEY) || localStorage.getItem('nusa_watchlist_symbols');
   if (saved) {
     try {
       return JSON.parse(saved);
@@ -23,7 +26,7 @@ let storedWatchlist: string[] = (() => {
 })();
 
 let storedAlerts: PriceAlert[] = (() => {
-  const saved = localStorage.getItem('nusa_price_alerts');
+  const saved = localStorage.getItem(ALERTS_STORAGE_KEY) || localStorage.getItem('nusa_price_alerts');
   if (saved) {
     try {
       return JSON.parse(saved);
@@ -77,7 +80,7 @@ export function useWatchlistStore() {
     } else {
       storedWatchlist = [...storedWatchlist, symbol];
     }
-    localStorage.setItem('nusa_watchlist_symbols', JSON.stringify(storedWatchlist));
+    localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(storedWatchlist));
     emitChange();
   };
 
@@ -93,13 +96,13 @@ export function useWatchlistStore() {
       createdAt: new Date().toLocaleDateString('id-ID'),
     };
     storedAlerts = [newAlert, ...storedAlerts];
-    localStorage.setItem('nusa_price_alerts', JSON.stringify(storedAlerts));
+    localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(storedAlerts));
     emitChange();
   };
 
   const removeAlert = (id: string) => {
     storedAlerts = storedAlerts.filter((a) => a.id !== id);
-    localStorage.setItem('nusa_price_alerts', JSON.stringify(storedAlerts));
+    localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(storedAlerts));
     emitChange();
   };
 

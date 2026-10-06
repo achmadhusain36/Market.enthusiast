@@ -138,7 +138,7 @@ export const HelpCenterPage: React.FC<HelpCenterPageProps> = ({ language = 'id' 
           : 'You can deposit funds via the Wallet page using Virtual Accounts, QRIS, or Web3 USDT.';
       } else if (lower.includes('withdraw') || lower.includes('tarik')) {
         reply = isId
-          ? 'Penarikan dana diproses instan ke rekening Bank BCA Anda atas nama Achmad Husain setelah verifikasi PIN keamanan.'
+          ? 'Penarikan dana diproses instan ke rekening Bank BCA terverifikasi Anda setelah verifikasi PIN keamanan.'
           : 'Withdrawals are processed instantly to your verified BCA account with PIN authorization.';
       } else if (lower.includes('demo') || lower.includes('paper')) {
         reply = isId

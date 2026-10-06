@@ -144,7 +144,7 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
 
   const handleAddComment = (postId: string) => {
     if (!commentText.trim()) return;
-    const authorName = userProfile?.name || 'Achmad Husain';
+    const authorName = userProfile?.name || 'Market Enthusiast';
     const newC = {
       id: `c-${Date.now()}`,
       author: authorName,
@@ -165,11 +165,11 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const authorName = userProfile?.name || 'Achmad Husain';
+    const authorName = userProfile?.name || 'Market Enthusiast';
     const newEntry: IdeaPost = {
       id: `post-${Date.now()}`,
       author: authorName,
-      avatar: authorName.charAt(0) || 'AH',
+      avatar: authorName.charAt(0) || 'M',
       avatarUrl: userProfile?.avatarUrl,
       role: userProfile?.title || (isId ? 'Investor Saham & Analis Pasar' : 'Stock Investor & Market Analyst'),
       symbol: selectedSymbolForPost,
@@ -263,7 +263,7 @@ export const CommunityPage: React.FC<CommunityPageProps> = ({
 
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-neutral-500">
-                  {isId ? `Sebagai: ${userProfile?.name || 'Achmad Husain'}` : `Posting as: ${userProfile?.name || 'Achmad Husain'}`}
+                  {isId ? `Sebagai: ${userProfile?.name || 'Market Enthusiast'}` : `Posting as: ${userProfile?.name || 'Market Enthusiast'}`}
                 </span>
                 <button
                   type="submit"

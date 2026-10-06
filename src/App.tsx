@@ -119,16 +119,19 @@ export default function App() {
     setAuthView('LANDING');
   };
 
-  // 1. Persistent User Profile & Language & Balance (Achmad Husain)
+  // 1. Persistent User Profile & Language & Balance
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('market_enthusiast_profile_v17b');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        if (parsed.name === 'Achmad Husain') {
+          parsed.name = 'Market Enthusiast';
+        }
         return {
           ...INITIAL_USER_PROFILE,
           ...parsed,
-          language: 'en', // User requested all text in English
+          language: parsed.language || 'id',
         };
       } catch (e) {
         console.error('Failed to parse user profile', e);
@@ -305,10 +308,12 @@ export default function App() {
   }, [stocks, activeSymbol]);
 
   // Generate or update chart candles whenever activeStock or timeframe changes
-  const [candles, setCandles] = useState(() => generateCandles(activeStock.price, timeframe));
+  const [candles, setCandles] = useState(() =>
+    generateCandles(activeStock.price, timeframe, activeStock.symbol)
+  );
 
   useEffect(() => {
-    setCandles(generateCandles(activeStock.price, timeframe));
+    setCandles(generateCandles(activeStock.price, timeframe, activeStock.symbol));
   }, [activeStock.symbol, timeframe]);
 
   // 6. Real-Time Global Market Sync Engine & Alert Worker (Runs every 2.5 seconds)
@@ -405,7 +410,7 @@ export default function App() {
           };
         })
       );
-    }, 2500);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [isLiveSyncing, alerts]);

@@ -160,7 +160,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     e.preventDefault();
     const updated: UserProfile = {
       ...userProfile,
-      name: name.trim() || 'Achmad Husain',
+      name: name.trim() || 'Market Enthusiast',
       title: title.trim() || (isId ? 'Investor Saham & Analis Pasar Global' : 'Stock Investor & Global Market Analyst'),
       email: email.trim() || 'emhaainunnajib36@gmail.com',
       avatarUrl: avatarUrl.trim() || undefined,
@@ -265,7 +265,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   };
 
   const handleResetDefaults = () => {
-    setName('Achmad Husain');
+    setName('Market Enthusiast');
     setTitle('Stock Investor & Global Market Analyst');
     setEmail('emhaainunnajib36@gmail.com');
     setAvatarUrl('');
